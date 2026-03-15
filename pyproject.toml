@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "badgeshield" 
+description = "A package to generate custom badges for GitLab"
+authors = [
+    {name = "Vertex AI Automations", email = "info@vertexaiautomations.com"}
+]
+readme = "README.md"
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Badges",
+    "Typing :: Typed",
+]
+requires-python = ">=3.8"
+keywords = ["gitlab", "badges", "custom", "design"]
+
+dynamic = ["version", "dependencies"]
+license = 'MIT'
+license-files = ['LICENSE']
+
+[project.urls]
+homepage = "https://www.vertexaiautomations.com"
+documentation = "https://vertex-ai-automations.github.io/badgeshield"
+repository = 'https://github.com/vertex-ai-automations/badgeshield'
+issues = "https://github.com/vertex-ai-automations/badgeshield/issues/new"
+
+[project.scripts]
+badgeshield = "badgeshield.generate_badge_cli:main"
+
+# version and requirements are dynamically pulled from setup.py. We may enable this in future if setup.py gets deprecated
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools_scm]
+# Auto generate _version.py with the corresponding git tag
+version_file = "src/badgeshield/_version.py"

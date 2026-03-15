@@ -1,0 +1,42 @@
+{% set clip_circle_id = 'clipCircle' + id_suffix %}
+
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" aria-labelledby="title desc" role="img">
+  <!-- Accessibility: Title and description -->
+  <title id="title">{{ left_title if left_title else left_text }}</title>
+  <desc id="desc">A badge with a circular shape, customizable gradient background, centered text, and an optional logo with a shadow effect, overlaid with a decorative frame.</desc>
+
+  <!-- Definition for clipping path -->
+  <defs>
+    <!-- Circular clipping path for the logo -->
+    <clipPath id="{{ clip_circle_id }}">
+      <circle cx="50" cy="50" r="35" />
+    </clipPath>
+  </defs>
+
+  <!-- Main circle without gradients or shadows, positioned behind the frame -->
+  <circle cx="50" cy="50" r="35" fill="{{ left_color }}" />
+
+  <!-- Optional logo, scaled and clipped to fit inside the reduced circle -->
+  {% if logo %}
+  <image x="{{ 50 - logo_width / 2 }}" y="{{ 50 - logo_height / 2 }}" width="{{ logo_width }}" height="{{ logo_height }}" href="data:image/png;base64,{{ logo }}" clip-path="url(#{{ clip_circle_id }})" preserveAspectRatio="xMidYMid slice" />
+  {% endif %}
+
+  <!-- Overlay frame image, scaled with the circle, positioned in front -->
+  {% if frame %}
+  <image x="5" y="5" width="90" height="90" href="data:image/png;base64,{{ frame }}" preserveAspectRatio="xMidYMid meet" />
+  {% endif %}
+
+  <!-- Centered text within the circle, dynamically sized -->
+  <text x="50" y="55" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="{{ font_size }}" fill="#ffffff" text-anchor="middle" alignment-baseline="middle">
+    {{ left_text }}
+  </text>
+
+  <!-- Optional transparent clickable area covering the circle -->
+  {% if left_link %}
+    <a xlink:href="{{ left_link }}">
+      <title>{{ left_title if left_title else left_text }}</title>
+      <circle cx="50" cy="50" r="36" fill="rgba(0,0,0,0)" />
+    </a>
+  {% endif %}
+</svg>
+

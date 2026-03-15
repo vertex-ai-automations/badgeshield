@@ -1,0 +1,2 @@
+jinja2
+pylogshield>=0.0.2

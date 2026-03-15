@@ -1,0 +1,217 @@
+site_name: BadgeShield
+site_description: A Python package for generating beautiful SVG badges for GitLab.
+site_author: Vertex AI Automations
+site_dir: public
+site_url: https://vertex-ai-automations.github.io/badgeshield
+
+# Repository configuration
+repo_name: badgeshield
+repo_url: https://github.com/vertex-ai-automations/badgeshield
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  logo: img/badgeshield_192x192.png
+  favicon: img/favicon/favicon.ico
+  language: en
+  custom_dir: docs/overrides
+  icon:
+    logo: material/shield-lock
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    # Navigation
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    # Table of contents
+    - toc.follow
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+    # Header
+    - header.autohide
+    - announce.dismiss
+    # Content
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - content.action.edit
+    - content.action.view
+
+# Navigations 
+nav:
+  - 📄Home:
+    - Overview: 'index.md'
+    - Installation: 'installation.md' 
+  - 🚀Getting Started:
+    - Basic Usage: 'getting-started/usage.md'
+    - CLI Usage: 'getting-started/cli_usage.md'
+  - 🔧 API Refrences:
+    - Generate Badge: 'reference/batch_generator.md'
+    - CLI: 'reference/batch_generator_cli.md'
+    - Utilities: 'reference/utils.md'
+  - 🔗Helpful Links: 'helpful_links.md'
+  - ❓FAQ: 'faq.md'
+        
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - git-authors
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - autorefs:
+      resolve_closest: true
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: spacy
+            filters: ["!^_"]
+            heading_level: 2
+            inherited_members: false
+            merge_init_into_class: true
+            parameter_headings: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature: true
+            show_signature_annotations: true
+            show_source: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+            members_order: source
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link to this section
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      auto_title: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: vertex-ai-automations
+      repo: pylogshield
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path: ["docs/includes"]
+      #auto_append:
+      #  - includes/abbreviations.md
+      #check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Customization
+extra_css:
+  - css/extra.css
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/vertex-ai-automations/pylogshield
+      name: PyLogShield on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/pylogshield/
+      name: PyLogShield on PyPI
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: Thanks for your feedback! Help us improve by opening an issue.
+
+copyright: >
+  Copyright &copy; 2024-2026 Vertex AI Automations –
+  <a href="#__consent">Change cookie settings</a>
+
+exclude_docs: |
+  *.py
+
+# Build options
+strict: false
+use_directory_urls: true
+
