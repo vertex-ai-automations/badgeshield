@@ -318,7 +318,7 @@ class BadgeGenerator:
         right_text: Optional[str] = None,
         right_color: Optional[Union[BadgeColor, str]] = None,
         logo: Optional[str] = None,
-        frame: Optional[FrameType] = None,
+        frame: Optional[Union[FrameType, str]] = None,
     ) -> Tuple[str, str, str, Optional[str]]:
         """Validate parameters shared by the different badge templates.
 
@@ -532,21 +532,15 @@ class BadgeGenerator:
         min_size: int = 8,
         circle_diameter: int = 180,
     ) -> int:
-        """Calculates an appropriate font size based on the length of the text and the fixed circle size."""
-        text_length = len(text)
-        # Assuming that the circle's diameter is 90 units (as the circle is centered with a radius of 45)
-        # The font size should shrink as the text length increases to ensure it fits within the circle.
+        """Calculates an appropriate font size based on the rendered text width and the fixed circle size."""
+        text_length = max(1, self._calculate_text_width(text) // 8)
         font_size = max(min(max_size, circle_diameter // text_length), min_size)
         return font_size
 
     def _calculate_logo_size(self, circle_radius: int) -> Tuple[int, int]:
         """Calculates the size of the logo to fit within the circle, accounting for the border width."""
-        adjusted_radius = circle_radius
-        logo_diameter = adjusted_radius * 2
-        return (
-            logo_diameter,
-            logo_diameter,
-        )  # width and height are the same for a square logo
+        logo_diameter = circle_radius * 2
+        return (logo_diameter, logo_diameter)
 
     def _load_logo_image(
         self, logo: str, tint: Optional[Union[str, BadgeColor]]
@@ -761,7 +755,7 @@ class BadgeGenerator:
         right_text: Optional[str] = None,
         right_color: Optional[Union[BadgeColor, str]] = None,
         logo: Optional[str] = None,
-        frame: Optional[FrameType] = None,
+        frame: Optional[Union[FrameType, str]] = None,
         left_link: Optional[str] = None,
         right_link: Optional[str] = None,
         id_suffix: str = "",

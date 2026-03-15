@@ -244,3 +244,14 @@ def test_absolute_badge_name_rejected(badge_generator, output_dir):
             badge_name="/tmp/evil.svg",
             output_path=str(output_dir),
         )
+
+
+def test_circle_font_size_stays_in_range():
+    """Font size for circle badges must remain in the 8-35pt range."""
+    generator = BadgeGenerator(template=BadgeTemplate.CIRCLE)
+    # Short text — should be near max size
+    assert 8 <= generator._calculate_font_size("Hi") <= 35
+    # Longer text — should shrink but stay above minimum
+    assert 8 <= generator._calculate_font_size("A longer badge label") <= 35
+    # Font size must not increase as text gets longer
+    assert generator._calculate_font_size("Hi") >= generator._calculate_font_size("A longer badge label")
