@@ -1,296 +1,224 @@
-import argparse
+from __future__ import annotations
+
 import json
-import os
+from pathlib import Path
+from typing import Optional
+
+import typer
+from rich import print as rprint
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+from rich.table import Table
 
 from pylogshield import LogLevel
 
 from .badge_generator import BadgeBatchGenerator, BadgeGenerator
 from .utils import BadgeColor, BadgeTemplate, FrameType
 
+app = typer.Typer(
+    name="badgeshield",
+    help="Generate customizable SVG badges.",
+    add_completion=False,
+)
 
-def validate_single_badge_args(args):
-    """Validate the arguments for single badge generation."""
-    # Validate color codes
-    # Set output_path to current directory if not provided
-    if args.output_path:
-        args.output_path = os.path.abspath(args.output_path)
-    else:
-        args.output_path = os.getcwd()
 
-    args.left_color = BadgeGenerator.validate_color(args.left_color, "left_color")
-    if args.right_color:
-        args.right_color = BadgeGenerator.validate_color(
-            args.right_color, "right_color"
+def _error(message: str) -> None:
+    """Print a Rich error panel to stdout."""
+    rprint(Panel(message, title="Error", border_style="red"))
+
+
+@app.command()
+def single(
+    left_text: str = typer.Option(..., help="Text for the left section"),
+    left_color: str = typer.Option(
+        ..., help="Hex (#RRGGBB) or BadgeColor name e.g. GREEN"
+    ),
+    badge_name: str = typer.Option(
+        ..., help="Output filename, must end with .svg"
+    ),
+    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME"),
+    output_path: Optional[str] = typer.Option(
+        None, help="Output directory; defaults to current directory"
+    ),
+    right_text: Optional[str] = typer.Option(None),
+    right_color: Optional[str] = typer.Option(None),
+    logo: Optional[str] = typer.Option(None, help="Path to a logo image"),
+    logo_tint: Optional[str] = typer.Option(
+        None, help="Hex or BadgeColor name to tint the logo"
+    ),
+    frame: Optional[str] = typer.Option(
+        None, help="Frame type — required for CIRCLE_FRAME template"
+    ),
+    left_link: Optional[str] = typer.Option(None),
+    right_link: Optional[str] = typer.Option(None),
+    id_suffix: str = typer.Option(""),
+    left_title: Optional[str] = typer.Option(None),
+    right_title: Optional[str] = typer.Option(None),
+    log_level: str = typer.Option(
+        "INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"
+    ),
+) -> None:
+    """Generate a single SVG badge."""
+    try:
+        log_level_enum = LogLevel[log_level.upper()]
+    except KeyError:
+        _error(
+            f"Invalid log_level '{log_level}'. "
+            f"Choose from: {', '.join(lv.name for lv in LogLevel)}"
         )
-    if args.logo_tint:
-        args.logo_tint = BadgeGenerator.validate_color(args.logo_tint, "logo_tint")
-
-    # Validate logo file existence
-    if args.logo and not os.path.isfile(args.logo):
-        raise ValueError(f"Logo file {args.logo} does not exist.")
-
-    # Validate frame usage with CIRCLE_FRAME template
-    template_name = (
-        args.template.name
-        if isinstance(args.template, BadgeTemplate)
-        else str(args.template)
-    )
-    if template_name.upper() == BadgeTemplate.CIRCLE_FRAME.name and not args.frame:
-        raise ValueError(
-            "The 'frame' parameter is required when using the CIRCLE_FRAME template."
-        )
-
-    # Ensure frame is of type FrameType
-    if args.frame:
-        args.frame = (
-            args.frame
-            if isinstance(args.frame, FrameType)
-            else FrameType[args.frame.upper()]
-        )
-
-    # Ensure output path is a directory
-    if not os.path.isdir(args.output_path):
-        raise ValueError(f"Output path {args.output_path} is not a valid directory.")
-
-    # Ensure badge_name is valid
-    if not args.badge_name.endswith(".svg"):
-        raise ValueError(
-            f"badge_name {args.badge_name} is not valid, must end with '.svg' (e.g., 'badge.svg')."
-        )
-
-
-def validate_batch_badge_args(args):
-    """Validate the arguments for batch badge generation."""
-    # Set output_path to current directory if not provided
-    if not args.output_path:
-        args.output_path = os.getcwd()
-    else:
-        args.output_path = os.path.abspath(args.output_path)
-
-    # Validate the existence of the configuration file
-    if not os.path.isfile(args.config_file):
-        raise ValueError(f"Configuration file {args.config_file} does not exist.")
+        raise typer.Exit(1)
 
     try:
-        with open(args.config_file, "r") as f:
-            badge_configs = json.load(f)
+        template_enum = BadgeTemplate[template.upper()]
+    except KeyError:
+        _error(
+            f"Invalid template '{template}'. "
+            f"Choose from: {', '.join(tmpl.name for tmpl in BadgeTemplate)}"
+        )
+        raise typer.Exit(1)
+
+    try:
+        frame_enum = FrameType[frame.upper()] if frame else None
+    except KeyError:
+        _error(
+            f"Invalid frame '{frame}'. "
+            f"Choose from: {', '.join(ft.name for ft in FrameType)}"
+        )
+        raise typer.Exit(1)
+
+    try:
+        generator = BadgeGenerator(template=template_enum, log_level=log_level_enum)
+        generator.generate_badge(
+            left_text=left_text,
+            left_color=left_color,
+            badge_name=badge_name,
+            output_path=output_path,
+            right_text=right_text,
+            right_color=right_color,
+            logo=logo,
+            frame=frame_enum,
+            left_link=left_link,
+            right_link=right_link,
+            id_suffix=id_suffix,
+            left_title=left_title,
+            right_title=right_title,
+            logo_tint=logo_tint,
+        )
+    except (ValueError, TypeError) as exc:
+        _error(str(exc))
+        raise typer.Exit(1)
+
+
+@app.command()
+def batch(
+    config_file: Path = typer.Argument(
+        ...,
+        exists=True,
+        help="Path to JSON config file containing badge definitions",
+    ),
+    output_path: Optional[str] = typer.Option(
+        None, help="Output directory; defaults to current directory"
+    ),
+    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME"),
+    log_level: str = typer.Option("INFO"),
+    max_workers: int = typer.Option(4, help="Parallel worker threads"),
+) -> None:
+    """Batch-generate SVG badges from a JSON config file."""
+    # --- Validate log_level ---
+    try:
+        log_level_enum = LogLevel[log_level.upper()]
+    except KeyError:
+        _error(
+            f"Invalid log_level '{log_level}'. "
+            f"Choose from: {', '.join(lv.name for lv in LogLevel)}"
+        )
+        raise typer.Exit(1)
+
+    # --- Validate template ---
+    try:
+        template_enum = BadgeTemplate[template.upper()]
+    except KeyError:
+        _error(
+            f"Invalid template '{template}'. "
+            f"Choose from: {', '.join(tmpl.name for tmpl in BadgeTemplate)}"
+        )
+        raise typer.Exit(1)
+
+    # --- Parse config ---
+    try:
+        badge_configs = json.loads(config_file.read_text(encoding="utf-8"))
         if not isinstance(badge_configs, list):
-            raise ValueError(
-                "The configuration file must contain a list of badge configurations."
+            _error("Config file must contain a JSON array of badge objects.")
+            raise typer.Exit(1)
+    except json.JSONDecodeError as exc:
+        _error(f"Invalid JSON in config file: {exc}")
+        raise typer.Exit(1)
+
+    # --- Validate each badge entry has badge_name ---
+    for entry in badge_configs:
+        if "badge_name" not in entry or not entry["badge_name"].endswith(".svg"):
+            _error(
+                "Each badge entry must include a 'badge_name' ending with '.svg'."
             )
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON format in {args.config_file}: {e}")
+            raise typer.Exit(1)
 
-    if not os.path.isdir(args.output_path):
-        raise ValueError(f"Output directory {args.output_path} does not exist.")
-
+    # --- Inject CLI-level template and output_path ---
     for badge in badge_configs:
-        if "badge_name" not in badge or not badge["badge_name"].endswith(".svg"):
-            raise ValueError(
-                "Each badge configuration must include a valid 'badge_name' ending with '.svg'."
-            )
+        badge["template"] = template_enum
+        if output_path is not None:
+            badge["output_path"] = output_path
+
+    # --- CIRCLE_FRAME requires 'frame' in every badge entry ---
+    if template_enum == BadgeTemplate.CIRCLE_FRAME:
+        for badge in badge_configs:
+            if "frame" not in badge:
+                _error(
+                    "CIRCLE_FRAME template requires a 'frame' key in every badge entry."
+                )
+                raise typer.Exit(1)
+
+    # --- Run with Rich progress ---
+    batch_gen = BadgeBatchGenerator(max_workers=max_workers, log_level=log_level_enum)
+    total = len(badge_configs)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("{task.completed}/{task.total}"),
+    ) as progress:
+        task = progress.add_task("Generating badges...", total=total)
 
         try:
-            badge["left_color"] = BadgeGenerator.validate_color(
-                badge["left_color"], "left_color"
+            batch_gen.generate_batch(
+                badge_configs,
+                progress_callback=lambda name: progress.advance(task),
             )
-            if badge.get("right_color"):
-                badge["right_color"] = BadgeGenerator.validate_color(
-                    badge["right_color"], "right_color"
-                )
-            if badge.get("logo_tint"):
-                badge["logo_tint"] = BadgeGenerator.validate_color(
-                    badge["logo_tint"], "logo_tint"
-                )
-            if badge.get("frame"):
-                badge["frame"] = (
-                    badge["frame"]
-                    if isinstance(badge["frame"], FrameType)
-                    else FrameType[badge["frame"].upper()]
-                )
-        except KeyError as exc:
-            raise ValueError(
-                "Each badge configuration must include a 'left_color' entry."
-            ) from exc
+        except RuntimeError:
+            pass  # failures surfaced via summary table
 
-    return badge_configs
+    # --- Print summary table ---
+    table = Table(title="Batch Results", show_lines=True)
+    table.add_column("Badge", style="cyan")
+    table.add_column("Status")
+    table.add_column("Error", style="red")
 
-
-def generate_single_badge(args):
-    try:
-        validate_single_badge_args(args)
-    except ValueError as e:
-        print(f"Validation Error: {e}")
-        return
-
-    log_level = args.log_level
-
-    # Convert template to BadgeTemplate enum
-    template = BadgeTemplate[args.template.upper()]
-
-    generator = BadgeGenerator(template=template, log_level=log_level)
-    generator.generate_badge(
-        left_text=args.left_text,
-        left_color=args.left_color,
-        output_path=args.output_path,
-        badge_name=args.badge_name,
-        right_text=args.right_text,
-        right_color=args.right_color,
-        logo=args.logo,
-        frame=args.frame,
-        left_link=args.left_link,
-        right_link=args.right_link,
-        id_suffix=args.id_suffix,
-        left_title=args.left_title,
-        right_title=args.right_title,
-        logo_tint=args.logo_tint,
-    )
-
-
-def generate_batch_badges(args):
-    try:
-        badge_configs = validate_batch_badge_args(args)
-    except ValueError as e:
-        print(f"Validation Error: {e}")
-        return
-
-    template = BadgeTemplate[args.template.upper()]
-
-    # Add output directory and validate badge_name for each badge config
+    failure_map = {name: err for name, err in batch_gen._failures}
     for badge in badge_configs:
-        badge["output_path"] = args.output_path
-        badge["template"] = template
-        if template == BadgeTemplate.CIRCLE_FRAME and "frame" not in badge:
-            print(
-                "Error: The 'frame' parameter is required for CIRCLE_FRAME badges in batch mode as well."
-            )
-            return
-        if "frame" in badge:
-            try:
-                badge["frame"] = (
-                    badge["frame"]
-                    if isinstance(badge["frame"], FrameType)
-                    else FrameType[badge["frame"].upper()]
-                )
-            except KeyError as exc:
-                print(
-                    f"Error: Invalid frame type '{badge['frame']}' for badge '{badge['badge_name']}'. {exc}"
-                )
-                return
+        name = badge["badge_name"]
+        if name in failure_map:
+            table.add_row(name, "[red]✗ FAIL[/red]", failure_map[name])
+        else:
+            table.add_row(name, "[green]✓ OK[/green]", "")
 
-    batch_generator = BadgeBatchGenerator(
-        max_workers=args.max_workers, log_level=args.log_level
-    )
-    batch_generator.generate_batch(badge_configs)
+    rprint(table)
+
+    if batch_gen._failures:
+        raise typer.Exit(1)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate custom badges for GitLab.")
-
-    subparsers = parser.add_subparsers(
-        dest="command", required=True, help="Subcommands: 'single' or 'batch'."
-    )
-
-    # Subcommand for single badge generation
-    single_parser = subparsers.add_parser("single", help="Generate a single badge.")
-    single_parser.add_argument(
-        "--left_text", required=True, help="Text for the left side of the badge."
-    )
-    single_parser.add_argument(
-        "--left_color",
-        required=True,
-        help="Background color for the left side of the badge.",
-    )
-    single_parser.add_argument(
-        "--output_path",
-        help="Directory where the badge SVG file will be saved. Defaults to current directory.",
-    )
-    single_parser.add_argument(
-        "--badge_name",
-        required=True,
-        help="Name of the SVG file to be generated (must end with .svg).",
-    )
-    single_parser.add_argument(
-        "--template",
-        default="DEFAULT",
-        choices=[t.name for t in BadgeTemplate],
-        help="Template to use for the badge.",
-    )
-    single_parser.add_argument(
-        "--right_text", help="Text for the right side of the badge."
-    )
-    single_parser.add_argument(
-        "--right_color", help="Background color for the right side of the badge."
-    )
-    single_parser.add_argument("--logo", help="URL or path to a logo image.")
-    single_parser.add_argument(
-        "--logo_tint",
-        help="Hex color or BadgeColor name to tint the provided logo before embedding.",
-    )
-    single_parser.add_argument(
-        "--frame",
-        choices=[t.name for t in FrameType],
-        help="Frame type for the badge. Required for CIRCLE_FRAME template.",
-    )
-    single_parser.add_argument(
-        "--left_link", help="Link for the left side of the badge."
-    )
-    single_parser.add_argument(
-        "--right_link", help="Link for the right side of the badge."
-    )
-    single_parser.add_argument(
-        "--id_suffix", default="", help="Suffix to add to the ID of the badge elements."
-    )
-    single_parser.add_argument(
-        "--left_title", help="Title text for the left side of the badge."
-    )
-    single_parser.add_argument(
-        "--right_title", help="Title text for the right side of the badge."
-    )
-    single_parser.add_argument(
-        "--log_level",
-        default="INFO",
-        choices=[level.name for level in LogLevel],
-        help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).",
-    )
-
-    # Subcommand for batch badge generation
-    batch_parser = subparsers.add_parser(
-        "batch", help="Batch generate badges from a configuration file."
-    )
-    batch_parser.add_argument(
-        "config_file",
-        help="Path to the JSON configuration file containing badge definitions.",
-    )
-    batch_parser.add_argument(
-        "--output_path",
-        help="Directory where the generated badge SVG files will be saved. Defaults to current directory.",
-    )
-    batch_parser.add_argument(
-        "--template",
-        default="DEFAULT",
-        choices=[t.name for t in BadgeTemplate],
-        help="Template to use for the badges.",
-    )
-    batch_parser.add_argument(
-        "--log_level",
-        default="INFO",
-        choices=[level.name for level in LogLevel],
-        help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).",
-    )
-    batch_parser.add_argument(
-        "--max_workers",
-        type=int,
-        default=4,
-        help="Maximum number of parallel workers for badge generation.",
-    )
-
-    args = parser.parse_args()
-
-    if args.command == "single":
-        generate_single_badge(args)
-    elif args.command == "batch":
-        generate_batch_badges(args)
+def main() -> None:
+    app()
 
 
 if __name__ == "__main__":
