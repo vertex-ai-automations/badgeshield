@@ -35,23 +35,26 @@ class BadgeBatchGenerator:
         self.max_workers = max_workers
         self.log_level = log_level
         self.logger = get_logger(name="badgeshield.batch", log_level=log_level)
+        self._failures: List[Tuple[str, str]] = []
 
-    def generate_batch(self, badges: List[Dict]) -> None:
+    def generate_batch(
+        self,
+        badges: List[Dict],
+        progress_callback: Optional[Callable[[str], None]] = None,
+    ) -> None:
         """Generate multiple badges concurrently.
 
         Parameters
         ----------
         badges: A list of dictionaries containing keyword arguments accepted by :meth:`BadgeGenerator.generate_badge`.
+        progress_callback: Optional callable invoked with the badge_name after each badge completes (success or failure).
 
         Raises
         ------
-        ValueError:
-            Propagated if any badge definition is invalid.
-        FileNotFoundError:
-            Propagated when required assets (e.g., logos) are missing.
         RuntimeError:
             Aggregated failures when one or more badges cannot be generated.
         """
+        self._failures = []  # reset on each call
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             future_to_badge = {
                 executor.submit(self._generate_single_badge, **badge): badge
@@ -61,29 +64,28 @@ class BadgeBatchGenerator:
 
             for future in as_completed(future_to_badge):
                 badge = future_to_badge[future]
+                badge_name = badge.get("badge_name", "unknown")
                 try:
-                    future.result()  # This will raise any exceptions that occurred during badge generation
+                    future.result()
                 except Exception as exc:
                     self.logger.error(
                         "Failed to generate badge",
-                        extra={
-                            "badge": badge.get("badge_name", badge),
-                            "error": str(exc),
-                        },
+                        extra={"badge": badge_name, "error": str(exc)},
                     )
                     errors.append((badge, exc))
+                    self._failures.append((badge_name, str(exc)))
                 else:
                     self.logger.info(
                         "Successfully generated badge",
-                        extra={
-                            "badge": badge.get("badge_name", badge.get("left_text"))
-                        },
+                        extra={"badge": badge_name},
                     )
+                finally:
+                    if progress_callback is not None:
+                        progress_callback(badge_name)
 
             if errors:
                 failure_summaries = ", ".join(
-                    f"{failed_badge.get('badge_name', failed_badge.get('left_text', 'unknown'))}: {error}"
-                    for failed_badge, error in errors
+                    f"{name}: {err}" for name, err in self._failures
                 )
                 raise RuntimeError(
                     f"Failed to generate {len(errors)} badge(s): {failure_summaries}"

@@ -255,3 +255,51 @@ def test_circle_font_size_stays_in_range():
     assert 8 <= generator._calculate_font_size("A longer badge label") <= 35
     # Font size must not increase as text gets longer
     assert generator._calculate_font_size("Hi") >= generator._calculate_font_size("A longer badge label")
+
+
+def test_batch_progress_callback_called_for_each_badge(output_dir):
+    """progress_callback must be called once per badge regardless of success/failure."""
+    called_with = []
+
+    batch_generator = BadgeBatchGenerator(max_workers=1)
+    badges = [
+        {
+            "left_text": "badge1",
+            "left_color": "#44cc11",
+            "badge_name": "one.svg",
+            "output_path": str(output_dir),
+            "template": BadgeTemplate.DEFAULT,
+        },
+        {
+            "left_text": "badge2",
+            "left_color": "#0000ff",
+            "badge_name": "two.svg",
+            "output_path": str(output_dir),
+            "template": BadgeTemplate.DEFAULT,
+        },
+    ]
+
+    batch_generator.generate_batch(badges, progress_callback=lambda name: called_with.append(name))
+
+    assert len(called_with) == 2
+    assert set(called_with) == {"one.svg", "two.svg"}
+
+
+def test_batch_failures_stored_on_instance(output_dir):
+    """_failures must contain (badge_name, error_str) tuples for each failed badge."""
+    batch_generator = BadgeBatchGenerator(max_workers=1)
+    badges = [
+        {
+            "left_text": "",  # empty text triggers ValueError
+            "left_color": "#ffffff",
+            "badge_name": "bad.svg",
+            "output_path": str(output_dir),
+            "template": BadgeTemplate.DEFAULT,
+        }
+    ]
+
+    with pytest.raises(RuntimeError):
+        batch_generator.generate_batch(badges)
+
+    assert len(batch_generator._failures) == 1
+    assert batch_generator._failures[0][0] == "bad.svg"
