@@ -148,6 +148,93 @@ batch.generate_batch(badges, progress_callback=on_progress)
 
 If any badge fails, `generate_batch` raises `RuntimeError` with a summary. Inspect `batch._failures` (a list of `(badge_name, error_str)` tuples) for details.
 
+## In-memory rendering
+
+Use `render_badge()` to get the SVG as a string — no file written:
+
+```python
+from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
+
+gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+svg: BadgeSVG = gen.render_badge(
+    left_text="build",
+    left_color="#555555",
+    right_text="passing",
+    right_color="#44cc11",
+)
+```
+
+`BadgeSVG` is a `str` subclass so it works anywhere a string is expected. It also ships three helpers:
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `.to_bytes(encoding="utf-8")` | `bytes` | SVG encoded as bytes |
+| `.to_data_uri()` | `str` | Base64-encoded `data:image/svg+xml` URI |
+| `.save(path)` | `None` | Write to a file path |
+
+**Typical uses:**
+
+```python
+# Serve over HTTP
+response_body = svg.to_bytes()
+
+# Inline in HTML without a separate file
+data_uri = svg.to_data_uri()
+html = f'<img src="{data_uri}" alt="build status">'
+
+# Inspect SVG content in tests
+assert "<svg" in svg
+assert "passing" in svg
+
+# Write to disk when you're ready
+svg.save("./badges/build.svg")
+```
+
+All parameters accepted by `generate_badge()` (except `badge_name` and `output_path`) are also accepted by `render_badge()`.
+
+---
+
+## Coverage badge
+
+`parse_coverage_xml()` reads a `coverage.xml` report and returns a percentage. `coverage_color()` maps it to the appropriate color.
+
+```python
+from badgeshield import parse_coverage_xml, coverage_color
+from badgeshield import BadgeGenerator, BadgeTemplate
+
+# Read coverage.xml produced by `coverage run`
+pct = parse_coverage_xml("coverage.xml")           # e.g. 94.3
+color = coverage_color(pct)                         # "#44cc11"
+
+gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+gen.generate_badge(
+    left_text="coverage",
+    left_color="#555555",
+    right_text=f"{pct:.0f}%",
+    right_color=color,
+    badge_name="coverage.svg",
+    output_path="./badges",
+)
+```
+
+Use `metric="branch"` to badge on branch coverage instead:
+
+```python
+pct = parse_coverage_xml("coverage.xml", metric="branch")
+```
+
+### Color thresholds
+
+| Coverage | Hex | Appearance |
+|----------|-----|------------|
+| ≥ 90% | `#44cc11` | green |
+| ≥ 80% | `#97ca00` | yellow-green |
+| ≥ 70% | `#a4a61d` | yellow |
+| ≥ 60% | `#dfb317` | orange |
+| < 60%  | `#e05d44` | red |
+
+---
+
 ## Embedding in HTML or GitLab Markdown
 
 ```html

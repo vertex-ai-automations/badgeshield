@@ -6,7 +6,68 @@ BadgeShield ships a Typer-powered CLI with Rich progress bars and error panels.
 badgeshield --help
 ```
 
-Two subcommands are available: `single` and `batch`.
+Three subcommands are available: `coverage`, `single`, and `batch`.
+
+---
+
+## Coverage badge
+
+Generate a correctly-colored badge from a `coverage.xml` file — no manual color picking needed.
+
+```bash
+badgeshield coverage --help
+```
+
+### Parameters
+
+| Argument / Flag | Required | Description |
+|-----------------|:--------:|-------------|
+| `INPUT` (positional) | ✅ | Path to `coverage.xml` |
+| `--badge-name` | ✅ | Output SVG filename — must end with `.svg` |
+| `--output-path` | | Output directory; defaults to CWD |
+| `--metric` | | `line` (default) or `branch` |
+| `--left-text` | | Left segment label (default: `coverage`) |
+| `--log-level` | | `DEBUG`, `INFO` (default), `WARNING`, `ERROR`, `CRITICAL` |
+
+### Color thresholds
+
+The right-side color is chosen automatically:
+
+| Coverage | Color |
+|----------|-------|
+| ≥ 90% | `#44cc11` (green) |
+| ≥ 80% | `#97ca00` (yellow-green) |
+| ≥ 70% | `#a4a61d` (yellow) |
+| ≥ 60% | `#dfb317` (orange) |
+| < 60%  | `#e05d44` (red) |
+
+### Examples
+
+**Line coverage (default):**
+
+```bash
+badgeshield coverage coverage.xml \
+  --badge-name coverage.svg \
+  --output-path ./badges
+```
+
+**Branch coverage:**
+
+```bash
+badgeshield coverage coverage.xml \
+  --metric branch \
+  --badge-name coverage-branch.svg \
+  --output-path ./badges
+```
+
+**Custom label:**
+
+```bash
+badgeshield coverage coverage.xml \
+  --badge-name tested.svg \
+  --left-text "tested" \
+  --output-path ./badges
+```
 
 ---
 

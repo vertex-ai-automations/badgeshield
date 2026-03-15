@@ -80,6 +80,7 @@ nav:
     - CLI Usage: 'getting-started/cli_usage.md'
   - 🔧 API Reference:
     - Generator & Batch: 'reference/batch_generator.md'
+    - Coverage: 'reference/coverage.md'
     - CLI Module: 'reference/batch_generator_cli.md'
     - Utilities: 'reference/utils.md'
   - 🔗 Helpful Links: 'helpful_links.md'
@@ -89,10 +90,10 @@ nav:
 plugins:
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-  - git-authors
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
+  #- git-authors
+  #- git-revision-date-localized:
+  #    enable_creation_date: true
+  #    type: timeago
   - autorefs:
       resolve_closest: true
   - mkdocstrings:
