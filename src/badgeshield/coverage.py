@@ -52,4 +52,12 @@ def parse_coverage_xml(
 
 def coverage_color(pct: float) -> str:
     """Return a hex color for the given coverage percentage."""
-    raise NotImplementedError
+    if pct >= 90:
+        return "#44cc11"
+    if pct >= 80:
+        return "#97ca00"
+    if pct >= 70:
+        return "#a4a61d"
+    if pct >= 60:
+        return "#dfb317"
+    return "#e05d44"

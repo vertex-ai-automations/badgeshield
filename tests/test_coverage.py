@@ -52,3 +52,16 @@ def test_parse_zero_coverage(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text('<coverage line-rate="0.0" branch-rate="0.0"/>')
     assert parse_coverage_xml(xml) == pytest.approx(0.0)
+
+
+def test_color_thresholds():
+    assert coverage_color(100.0) == "#44cc11"  # >= 90
+    assert coverage_color(90.0)  == "#44cc11"  # boundary
+    assert coverage_color(89.9)  == "#97ca00"  # >= 80
+    assert coverage_color(80.0)  == "#97ca00"  # boundary
+    assert coverage_color(79.9)  == "#a4a61d"  # >= 70
+    assert coverage_color(70.0)  == "#a4a61d"  # boundary
+    assert coverage_color(69.9)  == "#dfb317"  # >= 60
+    assert coverage_color(60.0)  == "#dfb317"  # boundary
+    assert coverage_color(59.9)  == "#e05d44"  # < 60
+    assert coverage_color(0.0)   == "#e05d44"  # zero
