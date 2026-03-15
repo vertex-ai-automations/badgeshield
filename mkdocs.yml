@@ -1,11 +1,11 @@
 site_name: BadgeShield
-site_description: A Python package for generating beautiful SVG badges for GitLab.
+site_description: A Python package for generating beautiful, customizable SVG badges — with a CLI, batch processing, and Pillow-powered font metrics.
 site_author: Vertex AI Automations
 site_dir: public
 site_url: https://vertex-ai-automations.github.io/badgeshield
 
 # Repository configuration
-repo_name: badgeshield
+repo_name: vertex-ai-automations/badgeshield
 repo_url: https://github.com/vertex-ai-automations/badgeshield
 edit_uri: edit/main/docs/
 theme:
@@ -23,7 +23,7 @@ theme:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
+      primary: deep purple
       accent: amber
       toggle:
         icon: material/brightness-7
@@ -31,7 +31,7 @@ theme:
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
+      primary: deep purple
       accent: amber
       toggle:
         icon: material/brightness-4
@@ -48,7 +48,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
-    - navigation.expand
+    - navigation.indexes
     - navigation.path
     - navigation.top
     - navigation.footer
@@ -70,20 +70,20 @@ theme:
     - content.action.edit
     - content.action.view
 
-# Navigations 
+# Navigation
 nav:
-  - 📄Home:
+  - 📄 Home:
     - Overview: 'index.md'
-    - Installation: 'installation.md' 
-  - 🚀Getting Started:
-    - Basic Usage: 'getting-started/usage.md'
+    - Installation: 'installation.md'
+  - 🚀 Getting Started:
+    - Python API: 'getting-started/usage.md'
     - CLI Usage: 'getting-started/cli_usage.md'
-  - 🔧 API Refrences:
-    - Generate Badge: 'reference/batch_generator.md'
-    - CLI: 'reference/batch_generator_cli.md'
+  - 🔧 API Reference:
+    - Generator & Batch: 'reference/batch_generator.md'
+    - CLI Module: 'reference/batch_generator_cli.md'
     - Utilities: 'reference/utils.md'
-  - 🔗Helpful Links: 'helpful_links.md'
-  - ❓FAQ: 'faq.md'
+  - 🔗 Helpful Links: 'helpful_links.md'
+  - ❓ FAQ: 'faq.md'
         
 # Plugins
 plugins:
@@ -184,11 +184,14 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/vertex-ai-automations/pylogshield
-      name: PyLogShield on GitHub
+      link: https://github.com/vertex-ai-automations/badgeshield
+      name: BadgeShield on GitHub
     - icon: fontawesome/brands/python
-      link: https://pypi.org/project/pylogshield/
-      name: PyLogShield on PyPI
+      link: https://pypi.org/project/badgeshield/
+      name: BadgeShield on PyPI
+    - icon: material/web
+      link: https://www.vertexaiautomations.com
+      name: Vertex AI Automations
   analytics:
     provider: google
     property: G-XXXXXXXXXX

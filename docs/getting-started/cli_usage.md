@@ -1,104 +1,174 @@
-## Command-Line Interface (CLI)
+# CLI Usage
 
-You can generate badges directly from the command line using the CLI tool.
-
-### Single Badge Generation 
-
-| Commands | Desc |
-| ------ | ------ |
-| single | Generate single badge. |
-
-| Parameter | Required | Description |
-| --- | :---: | --- |
-| `--left_text` | ✅ | Text on the left segment. |
-| `--left_color` | ✅ | `BadgeColor` enum member or hex color. |
-| `--badge_name` | ✅ | Output SVG file name (must end in `.svg`). |
-| `--output_path` |  | Directory for the generated file. Defaults to CWD. |
-| `--right_text` |  | Text on the right segment. |
-| `--right_color` |  | Color for the right segment. |
-| `--template` |  | `BadgeTemplate` enum name. |
-| `--frame` |  | Required when using `CIRCLE_FRAME`. Accepts `FrameType`. |
-| `--logo` |  | Path to an image encoded into the badge. |
-| `--logo_tint` |  | Hex/enum color used to tint the supplied logo. |
-| `--left_link` |  | Hyperlink for the left segment. |
-| `--right_link` |  | Hyperlink for the right segment. |
-| `--id_suffix` |  | Appends a suffix to SVG element IDs. |
-| `--left_title` |  | Accessible title for the left segment. |
-| `--right_title` |  | Accessible title for the right segment. |
-| `--log_level` |  | Logging verbosity (`DEBUG`, `INFO`, etc.). |
-
-### Example
+BadgeShield ships a Typer-powered CLI with Rich progress bars and error panels.
 
 ```bash
-badgeshield single --left_text="flake8" --left_color="#FF0000" --output_path="./badges" --badge_name="build_success.svg" --log_level DEBUG
+badgeshield --help
 ```
 
-### Badge with Right Text
+Two subcommands are available: `single` and `batch`.
 
-Generate a badge with both left and right text:
+---
+
+## Single badge
+
+Generate one SVG badge from command-line arguments.
 
 ```bash
-badgeshield single --left_text="flake8" --left_color="#FF0000" --right_text="tests" --right_color="#FFA500" --output_path="./badges" --badge_name="build_success.svg"
+badgeshield single --help
 ```
 
-### Badge with Logo
+### Parameters
 
-Generate a badge with a logo:
+| Flag | Required | Description |
+|------|:--------:|-------------|
+| `--left-text` | ✅ | Text on the left segment |
+| `--left-color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
+| `--badge-name` | ✅ | Output SVG filename — must end with `.svg` |
+| `--output-path` | | Output directory; defaults to CWD |
+| `--template` | | `DEFAULT` (default), `CIRCLE`, or `CIRCLE_FRAME` |
+| `--right-text` | | Text on the right segment |
+| `--right-color` | | Color for the right segment |
+| `--frame` | | `FRAME1`–`FRAME11`; required for `CIRCLE_FRAME` |
+| `--logo` | | Path to an image to embed |
+| `--logo-tint` | | Hex or `BadgeColor` name to recolor the logo |
+| `--left-link` | | Hyperlink for the left segment |
+| `--right-link` | | Hyperlink for the right segment |
+| `--id-suffix` | | Appended to SVG element IDs |
+| `--left-title` | | Accessible title for the left segment |
+| `--right-title` | | Accessible title for the right segment |
+| `--log-level` | | `DEBUG`, `INFO` (default), `WARNING`, `ERROR`, `CRITICAL` |
+
+### Examples
+
+**Minimal — left text only:**
 
 ```bash
-badgeshield single --left_text="flake8" --left_color="#FF0000" --logo="logo.png" --output_path="./badges" --badge_name="build_success.svg"
+badgeshield single \
+  --left-text "flake8" \
+  --left-color "#4b0082" \
+  --badge-name flake8.svg
 ```
 
-### Badge with Links
-
-Generate a badge with left and right links:
+**Two-part badge:**
 
 ```bash
-badgeshield single --left_text="flake8" --left_color="#FF0000" --left_link="https://example.com/build" --right_link="https://example.com/status" --output_path="./badges" --badge_name="build_success.svg"
+badgeshield single \
+  --left-text "coverage" \
+  --left-color "#555555" \
+  --right-text "94%" \
+  --right-color "#44cc11" \
+  --badge-name coverage.svg \
+  --output-path ./badges
 ```
 
-Generate a badge with Frame template:
+**With logo:**
 
 ```bash
-badgeshield single --left_text="flake8" --left_color="#FF0000" --output_path="./badge" --badge_name="build_success.svg" --template CIRCLE_FRAME --frame FRAME1
+badgeshield single \
+  --left-text "python" \
+  --left-color "#3776ab" \
+  --logo path/to/python.png \
+  --logo-tint "#ffffff" \
+  --badge-name python.svg \
+  --output-path ./badges
 ```
 
-## Multiple Badge Generation 
-
-Provide a JSON configuration containing an array of badge definitions and generate them in parallel:
-
-| Commands | Desc |
-| ------ | ------ |
-| batch | Generate multiple badges. |
-
-| Parameters | Value | Type |
-| ------ | ------ | ------ |
-| config-file | required | str |
-| --output_path | optional | BadgeColor |
-| --template | optional | str |
-| --log_level | optional | LogLevel |
-| --max_workers | optional | str |
-
-### Example
+**Circle frame template:**
 
 ```bash
-badgeshield batch badges.json --output_dir badges --log_level INFO --max_workers 4
+badgeshield single \
+  --left-text "MH" \
+  --left-color "#673ab7" \
+  --template CIRCLE_FRAME \
+  --frame FRAME1 \
+  --badge-name initials.svg \
+  --output-path ./badges
 ```
 
-Configuration example (`badges.json`):
+**With links and titles (accessibility):**
+
+```bash
+badgeshield single \
+  --left-text "build" \
+  --left-color "#555" \
+  --right-text "passing" \
+  --right-color "#44cc11" \
+  --left-link "https://example.com/pipeline" \
+  --right-link "https://example.com/results" \
+  --left-title "Pipeline status" \
+  --right-title "Test result" \
+  --badge-name build.svg
+```
+
+---
+
+## Batch generation
+
+Generate many badges in parallel from a JSON configuration file.
+
+```bash
+badgeshield batch --help
+```
+
+### Parameters
+
+| Argument / Flag | Required | Description |
+|-----------------|:--------:|-------------|
+| `CONFIG_FILE` (positional) | ✅ | Path to JSON config file |
+| `--output-path` | | Output directory; defaults to CWD |
+| `--template` | | `DEFAULT` (default), `CIRCLE`, or `CIRCLE_FRAME` |
+| `--log-level` | | Logging verbosity |
+| `--max-workers` | | Parallel threads (default: 4) |
+
+### Config file format
+
+The JSON file must be an **array** of badge objects. Each object accepts any parameter from the Python API:
 
 ```json
 [
   {
+    "badge_name": "build.svg",
     "left_text": "build",
-    "left_color": "GREEN",
-    "badge_name": "build.svg"
+    "left_color": "GREEN"
   },
   {
+    "badge_name": "coverage.svg",
     "left_text": "coverage",
-    "left_color": "#ffc107",
-    "right_text": "85%",
-    "badge_name": "coverage.svg"
+    "left_color": "#555555",
+    "right_text": "94%",
+    "right_color": "#44cc11"
+  },
+  {
+    "badge_name": "version.svg",
+    "left_text": "v2.1.0",
+    "left_color": "#673ab7"
   }
 ]
 ```
+
+### Example
+
+```bash
+badgeshield batch badges.json \
+  --output-path ./badges \
+  --max-workers 8
+```
+
+A Rich progress bar tracks completion. After all badges are processed, a summary table is printed:
+
+```
+                  Batch Results
+┌──────────────┬────────────┬───────┐
+│ Badge        │ Status     │ Error │
+├──────────────┼────────────┼───────┤
+│ build.svg    │ ✓ OK       │       │
+│ coverage.svg │ ✓ OK       │       │
+│ version.svg  │ ✓ OK       │       │
+└──────────────┴────────────┴───────┘
+```
+
+Failures are shown in red with the error message. The command exits with code `1` if any badge fails.
+
+!!! tip "CIRCLE_FRAME in batch mode"
+    When using `--template CIRCLE_FRAME`, every entry in the JSON config must include a `"frame"` key (e.g. `"frame": "FRAME1"`).
