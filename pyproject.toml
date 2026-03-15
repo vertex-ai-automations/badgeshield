@@ -27,6 +27,9 @@ requires-python = ">=3.8"
 keywords = ["gitlab", "badges", "custom", "design"]
 
 dynamic = ["version", "dependencies"]
+
+[project.optional-dependencies]
+image = ["Pillow>=9.0"]
 license = 'MIT'
 license-files = ['LICENSE']
 
