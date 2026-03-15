@@ -1,11 +1,12 @@
 import base64
 import os
 import re
+import threading
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 from pylogshield import LogLevel, get_logger
 from jinja2 import (
