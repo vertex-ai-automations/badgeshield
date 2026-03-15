@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from custom_badges.generate_badge_cli import (
+from badgeshield.generate_badge_cli import (
     validate_batch_badge_args,
     validate_single_badge_args,
 )
-from custom_badges.utils import BadgeTemplate
+from badgeshield.utils import BadgeTemplate
 
 
 def _base_single_args(output_dir: Path) -> Namespace:
