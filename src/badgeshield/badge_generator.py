@@ -375,6 +375,17 @@ class BadgeGenerator:
                 f"badge_name {badge_name} is not valid, must end with '.svg' (e.g., 'badge.svg')."
             )
 
+        # Prevent path traversal
+        badge_path = Path(badge_name)
+        if any(part in ("..", ".") for part in badge_path.parts[:-1]):
+            raise ValueError(
+                f"badge_name '{badge_name}' must not contain directory traversal."
+            )
+        if badge_path.is_absolute() or (len(badge_path.parts) > 1 and badge_path.parts[0] in ("\\", "/")):
+            raise ValueError(
+                f"badge_name '{badge_name}' must be a plain filename, not an absolute path."
+            )
+
         return left_color_value, right_color_value, output_path, frame_value
 
     def local_path(self, relative_path: str) -> str:

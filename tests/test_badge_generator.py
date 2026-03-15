@@ -222,3 +222,25 @@ def test_batch_generator_propagates_errors(output_dir):
 
     with pytest.raises(RuntimeError):
         batch_generator.generate_batch(badges)
+
+
+def test_path_traversal_rejected(badge_generator, output_dir):
+    """badge_name with directory traversal must raise ValueError."""
+    with pytest.raises(ValueError, match="traversal"):
+        badge_generator.generate_badge(
+            left_text="test",
+            left_color="#44cc11",
+            badge_name="../escape.svg",
+            output_path=str(output_dir),
+        )
+
+
+def test_absolute_badge_name_rejected(badge_generator, output_dir):
+    """Absolute paths in badge_name must raise ValueError."""
+    with pytest.raises(ValueError):
+        badge_generator.generate_badge(
+            left_text="test",
+            left_color="#44cc11",
+            badge_name="/tmp/evil.svg",
+            output_path=str(output_dir),
+        )
