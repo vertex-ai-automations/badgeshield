@@ -65,3 +65,50 @@ def test_color_thresholds():
     assert coverage_color(60.0)  == "#dfb317"  # boundary
     assert coverage_color(59.9)  == "#e05d44"  # < 60
     assert coverage_color(0.0)   == "#e05d44"  # zero
+
+
+def test_coverage_cli_happy_path(tmp_path):
+    xml = tmp_path / "coverage.xml"
+    xml.write_text('<coverage line-rate="0.943" branch-rate="0.812"/>')
+    result = runner.invoke(app, [
+        "coverage", str(xml), "--badge-name", "cov.svg", "--output-path", str(tmp_path)
+    ])
+    assert result.exit_code == 0
+    assert (tmp_path / "cov.svg").exists()
+
+
+def test_coverage_cli_missing_file(tmp_path):
+    result = runner.invoke(app, [
+        "coverage", str(tmp_path / "missing.xml"), "--badge-name", "cov.svg"
+    ])
+    assert result.exit_code == 1
+
+
+def test_coverage_cli_invalid_metric(tmp_path):
+    xml = tmp_path / "coverage.xml"
+    xml.write_text('<coverage line-rate="0.943"/>')
+    result = runner.invoke(app, [
+        "coverage", str(xml), "--badge-name", "cov.svg", "--metric", "foo"
+    ])
+    assert result.exit_code == 1
+
+
+def test_coverage_cli_branch_metric(tmp_path):
+    xml = tmp_path / "coverage.xml"
+    xml.write_text('<coverage line-rate="0.943" branch-rate="0.812"/>')
+    result = runner.invoke(app, [
+        "coverage", str(xml), "--badge-name", "cov.svg",
+        "--output-path", str(tmp_path), "--metric", "branch"
+    ])
+    assert result.exit_code == 0
+    assert (tmp_path / "cov.svg").exists()
+
+
+def test_coverage_cli_custom_label(tmp_path):
+    xml = tmp_path / "coverage.xml"
+    xml.write_text('<coverage line-rate="0.943"/>')
+    result = runner.invoke(app, [
+        "coverage", str(xml), "--badge-name", "cov.svg",
+        "--output-path", str(tmp_path), "--left-text", "tested"
+    ])
+    assert result.exit_code == 0

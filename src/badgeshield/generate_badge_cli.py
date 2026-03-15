@@ -14,6 +14,7 @@ from pylogshield import LogLevel
 
 from .badge_generator import BadgeBatchGenerator, BadgeGenerator
 from .utils import BadgeColor, BadgeTemplate, FrameType
+from .coverage import coverage_color, parse_coverage_xml
 
 app = typer.Typer(
     name="badgeshield",
@@ -215,6 +216,48 @@ def batch(
 
     if batch_gen._failures:
         raise typer.Exit(1)
+
+
+@app.command()
+def coverage(
+    input: Path = typer.Argument(..., help="Path to coverage.xml"),
+    badge_name: str = typer.Option(..., help="Output SVG filename (must end with .svg)"),
+    output_path: Optional[str] = typer.Option(None, help="Output directory; defaults to CWD"),
+    metric: str = typer.Option("line", help="Coverage metric: 'line' or 'branch'"),
+    left_text: str = typer.Option("coverage", help="Left segment label"),
+    log_level: str = typer.Option("INFO", help="Logging verbosity"),
+) -> None:
+    """Generate a coverage badge from a coverage.xml report."""
+    try:
+        log_level_enum = LogLevel[log_level.upper()]
+    except KeyError:
+        _error(f"Invalid log_level '{log_level}'. Choose from: {', '.join(lv.name for lv in LogLevel)}")
+        raise typer.Exit(1)
+
+    try:
+        pct = parse_coverage_xml(input, metric=metric)
+    except (FileNotFoundError, ValueError) as exc:
+        _error(str(exc))
+        raise typer.Exit(1)
+
+    right_color = coverage_color(pct)
+    right_text = f"{pct:.0f}%"
+
+    try:
+        gen = BadgeGenerator(template=BadgeTemplate.DEFAULT, log_level=log_level_enum)
+        gen.generate_badge(
+            left_text=left_text,
+            left_color="#555555",
+            right_text=right_text,
+            right_color=right_color,
+            badge_name=badge_name,
+            output_path=output_path,
+        )
+    except (ValueError, TypeError) as exc:
+        _error(str(exc))
+        raise typer.Exit(1)
+
+    typer.echo(f"Coverage badge generated: {pct:.1f}% ({metric} coverage)")
 
 
 def main() -> None:
