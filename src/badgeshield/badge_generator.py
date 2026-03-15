@@ -191,8 +191,8 @@ _FALLBACK_CHAR_WIDTHS = {
 class BadgeGenerator:
     """Class to generate custom badges for GitLab."""
 
-    _template_cache = {}
-    _RENDERERS: ClassVar[dict] = {}  # populated after class body
+    _template_cache: ClassVar[Dict[str, Template]] = {}
+    _RENDERERS: ClassVar[Dict[BadgeTemplate, Callable[..., str]]] = {}  # populated after class body
     _cache_lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
@@ -212,6 +212,7 @@ class BadgeGenerator:
 
         self.template_name = str(template)
         self.template_enum = template  # kept for registry dispatch
+        self._last_render_context: Optional[dict] = None
         self._setup_jinja2_env()
         self.logger = get_logger(name="badgeshield", log_level=log_level)
 
@@ -224,7 +225,7 @@ class BadgeGenerator:
             autoescape=select_autoescape(["svg"]),
         )
 
-    def _get_template(self, template_name: str) -> Optional[Template]:
+    def _get_template(self, template_name: str) -> Template:
         """Return the cached Jinja2 template, loading it if necessary.
 
         Parameters
@@ -244,11 +245,10 @@ class BadgeGenerator:
                         template_name
                     )
                 return self._template_cache[template_name]
-        except TemplateNotFound:
-            self.logger.error(
+        except TemplateNotFound as exc:
+            raise RuntimeError(
                 f"Template {template_name} not found in package 'badgeshield'"
-            )
-            return None
+            ) from exc
 
     @staticmethod
     def is_valid_hex_color(color: str) -> bool:
