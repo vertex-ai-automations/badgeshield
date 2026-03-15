@@ -192,6 +192,8 @@ class BadgeGenerator:
     """Class to generate custom badges for GitLab."""
 
     _template_cache = {}
+    _RENDERERS: ClassVar[dict] = {}  # populated after class body
+    _cache_lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
         self,
@@ -209,6 +211,7 @@ class BadgeGenerator:
         """
 
         self.template_name = str(template)
+        self.template_enum = template  # kept for registry dispatch
         self._setup_jinja2_env()
         self.logger = get_logger(name="badgeshield", log_level=log_level)
 
@@ -235,16 +238,17 @@ class BadgeGenerator:
             A compiled Jinja2 template ready for rendering, or ``None`` if the template cannot be located.
         """
         try:
-            if template_name not in self._template_cache:
-                self._template_cache[template_name] = self._jinja2_env.get_template(
-                    template_name
-                )
-            return self._template_cache[template_name]
+            with BadgeGenerator._cache_lock:
+                if template_name not in self._template_cache:
+                    self._template_cache[template_name] = self._jinja2_env.get_template(
+                        template_name
+                    )
+                return self._template_cache[template_name]
         except TemplateNotFound:
             self.logger.error(
-                f"Template {self.template_name} not found in package 'badgeshield'"
+                f"Template {template_name} not found in package 'badgeshield'"
             )
-            return
+            return None
 
     @staticmethod
     def is_valid_hex_color(color: str) -> bool:
@@ -580,6 +584,118 @@ class BadgeGenerator:
             )
             return self.get_base64_content(logo)
 
+    def _render_default(
+        self,
+        left_text: str,
+        left_color: str,
+        right_text: Optional[str],
+        right_color: Optional[str],
+        logo: Optional[str],
+        frame: Optional[str],
+        left_link: Optional[str],
+        right_link: Optional[str],
+        id_suffix: str,
+        left_title: Optional[str],
+        right_title: Optional[str],
+        logo_tint: Optional[Union[str, "BadgeColor"]],
+    ) -> str:
+        logo_data = self._load_logo_image(logo, logo_tint) if logo else None
+        left_text_width = self._calculate_text_width(left_text)
+        right_text_width = self._calculate_text_width(right_text) if right_text else 0
+        logo_width = 14 if logo else 0
+        logo_padding = 3 if logo else 0
+        text_padding = 10
+        left_width = left_text_width + text_padding + logo_width + logo_padding
+        right_width = right_text_width + text_padding if right_text else 0
+        total_width = left_width + right_width + (text_padding if right_text else 0)
+        context = dict(
+            left_text=left_text,
+            right_text=right_text,
+            left_color=left_color,
+            right_color=right_color if right_text else left_color,
+            left_text_width=left_text_width,
+            right_text_width=right_text_width,
+            logo=logo_data,
+            left_link=left_link,
+            right_link=right_link,
+            id_suffix=id_suffix,
+            left_width=left_width,
+            right_width=right_width,
+            logo_width=logo_width,
+            logo_padding=logo_padding,
+            text_padding=text_padding,
+            total_width=total_width,
+            left_title=left_title,
+            right_title=right_title,
+        )
+        self._last_render_context = context
+        return self._get_template(self.template_name).render(**context)
+
+    def _render_circle(
+        self,
+        left_text: str,
+        left_color: str,
+        right_text: Optional[str],
+        right_color: Optional[str],
+        logo: Optional[str],
+        frame: Optional[str],
+        left_link: Optional[str],
+        right_link: Optional[str],
+        id_suffix: str,
+        left_title: Optional[str],
+        right_title: Optional[str],
+        logo_tint: Optional[Union[str, "BadgeColor"]],
+    ) -> str:
+        logo_data = self._load_logo_image(logo, logo_tint) if logo else None
+        font_size = self._calculate_font_size(left_text)
+        context = dict(
+            left_text=left_text,
+            right_text=right_text,
+            left_color=left_color,
+            id_suffix=id_suffix,
+            logo=logo_data,
+            left_link=left_link,
+            left_title=left_title,
+            font_size=font_size,
+        )
+        self._last_render_context = context
+        return self._get_template(self.template_name).render(**context)
+
+    def _render_circle_frame(
+        self,
+        left_text: str,
+        left_color: str,
+        right_text: Optional[str],
+        right_color: Optional[str],
+        logo: Optional[str],
+        frame: Optional[str],
+        left_link: Optional[str],
+        right_link: Optional[str],
+        id_suffix: str,
+        left_title: Optional[str],
+        right_title: Optional[str],
+        logo_tint: Optional[Union[str, "BadgeColor"]],
+    ) -> str:
+        logo_data = self._load_logo_image(logo, logo_tint) if logo else None
+        circle_radius = 35
+        logo_width, logo_height = self._calculate_logo_size(circle_radius)
+        font_size = self._calculate_font_size(left_text, circle_diameter=circle_radius * 2)
+        frame_data = self.get_base64_content(frame) if frame else None
+        context = dict(
+            left_text=left_text,
+            left_color=left_color,
+            logo=logo_data,
+            frame=frame_data,
+            left_link=left_link,
+            left_title=left_title,
+            font_size=font_size,
+            logo_width=logo_width,
+            logo_height=logo_height,
+            id_suffix=id_suffix,
+        )
+        self._last_render_context = context
+        return self._get_template(self.template_name).render(**context)
+
     def _render_badge_content(
         self,
         left_text: str,
@@ -627,76 +743,14 @@ class BadgeGenerator:
         str:
             The rendered badge content as a string.
         """
-
-        logo_data = self._load_logo_image(logo, logo_tint) if logo else None
-
-        if self.template_name == BadgeTemplate.DEFAULT.value:
-            left_text_width = self._calculate_text_width(left_text)
-            right_text_width = (
-                self._calculate_text_width(right_text) if right_text else 0
-            )
-            logo_width = 14 if logo else 0
-            logo_padding = 3 if logo else 0
-            text_padding = 10
-            left_width = left_text_width + text_padding + logo_width + logo_padding
-            right_width = right_text_width + text_padding if right_text else 0
-            total_width = left_width + right_width + (text_padding if right_text else 0)
-            return self._jinja2_env.get_template(self.template_name).render(
-                left_text=left_text,
-                right_text=right_text,
-                left_color=left_color,
-                right_color=right_color if right_text else left_color,
-                left_text_width=left_text_width,
-                right_text_width=right_text_width,
-                logo=logo_data,
-                left_link=left_link,
-                right_link=right_link,
-                id_suffix=id_suffix,
-                left_width=left_width,
-                right_width=right_width,
-                logo_width=logo_width,
-                logo_padding=logo_padding,
-                text_padding=text_padding,
-                total_width=total_width,
-                left_title=left_title,
-                right_title=right_title,
-            )
-        if self.template_name == BadgeTemplate.CIRCLE.value:
-            # Calculate the appropriate font size
-            font_size = self._calculate_font_size(left_text)
-            return self._jinja2_env.get_template(self.template_name).render(
-                left_text=left_text,
-                right_text=right_text,
-                left_color=left_color,
-                id_suffix=id_suffix,
-                logo=logo_data,
-                left_link=left_link,
-                left_title=left_title,
-                font_size=font_size,
-            )
-
-        if self.template_name == BadgeTemplate.CIRCLE_FRAME.value:
-            circle_radius = 35
-            logo_width, logo_height = self._calculate_logo_size(circle_radius)
-
-            # Calculate the appropriate font size
-            font_size = self._calculate_font_size(
-                left_text, circle_diameter=circle_radius * 2
-            )
-
-            frame_data = self.get_base64_content(frame) if frame else None
-            return self._jinja2_env.get_template(self.template_name).render(
-                left_text=left_text,
-                left_color=left_color,
-                logo=logo_data,
-                frame=frame_data,
-                left_link=left_link,
-                left_title=left_title,
-                font_size=font_size,
-                logo_width=logo_width,
-                logo_height=logo_height,
-                id_suffix=id_suffix,
-            )
+        renderer = BadgeGenerator._RENDERERS.get(self.template_enum)
+        if renderer is None:
+            raise ValueError(f"No renderer registered for template {self.template_enum}")
+        return renderer(
+            self,
+            left_text, left_color, right_text, right_color, logo, frame,
+            left_link, right_link, id_suffix, left_title, right_title, logo_tint,
+        )
 
     def generate_badge(
         self,
@@ -789,3 +843,10 @@ class BadgeGenerator:
         except Exception as e:
             self.logger.error(f"An error occurred while generating the badge: {e}")
             raise
+
+
+BadgeGenerator._RENDERERS = {
+    BadgeTemplate.DEFAULT: BadgeGenerator._render_default,
+    BadgeTemplate.CIRCLE: BadgeGenerator._render_circle,
+    BadgeTemplate.CIRCLE_FRAME: BadgeGenerator._render_circle_frame,
+}
