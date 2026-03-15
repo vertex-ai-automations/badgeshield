@@ -2,13 +2,10 @@ import argparse
 import json
 import os
 
-from .badge_generator import (
-    BadgeBatchGenerator,
-    BadgeGenerator,
-    BadgeTemplate,
-    FrameType,
-    LogLevel,
-)
+from pylogshield import LogLevel
+
+from .badge_generator import BadgeBatchGenerator, BadgeGenerator
+from .utils import BadgeColor, BadgeTemplate, FrameType
 
 
 def validate_single_badge_args(args):
