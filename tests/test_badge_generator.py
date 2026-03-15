@@ -303,3 +303,113 @@ def test_batch_failures_stored_on_instance(output_dir):
 
     assert len(batch_generator._failures) == 1
     assert batch_generator._failures[0][0] == "bad.svg"
+
+
+def test_batch_happy_path(output_dir):
+    """Batch generation should create all submitted badge files."""
+    batch_generator = BadgeBatchGenerator(max_workers=2)
+    badges = [
+        {
+            "left_text": f"badge{i}",
+            "left_color": "#44cc11",
+            "badge_name": f"badge{i}.svg",
+            "output_path": str(output_dir),
+            "template": BadgeTemplate.DEFAULT,
+        }
+        for i in range(3)
+    ]
+    batch_generator.generate_batch(badges)
+    for i in range(3):
+        assert (output_dir / f"badge{i}.svg").exists()
+
+
+def test_concurrent_batch_no_corruption(output_dir):
+    """Concurrent batch with multiple workers must produce non-empty files."""
+    batch_generator = BadgeBatchGenerator(max_workers=3)
+    badges = [
+        {
+            "left_text": f"t{i}",
+            "left_color": "#0000ff",
+            "badge_name": f"t{i}.svg",
+            "output_path": str(output_dir),
+            "template": BadgeTemplate.DEFAULT,
+        }
+        for i in range(6)
+    ]
+    batch_generator.generate_batch(badges)
+    for i in range(6):
+        path = output_dir / f"t{i}.svg"
+        assert path.exists()
+        assert path.stat().st_size > 0
+
+
+def test_circle_template_creates_svg_with_circle(output_dir):
+    """CIRCLE template SVG must contain a <circle element."""
+    generator = BadgeGenerator(template=BadgeTemplate.CIRCLE)
+    generator.generate_badge(
+        left_text="test",
+        left_color="#123456",
+        badge_name="circle.svg",
+        output_path=str(output_dir),
+    )
+    content = (output_dir / "circle.svg").read_text()
+    assert "<circle" in content
+
+
+def test_circle_frame_with_valid_frame(output_dir):
+    """CIRCLE_FRAME template with a valid FrameType must create the SVG."""
+    generator = BadgeGenerator(template=BadgeTemplate.CIRCLE_FRAME)
+    generator.generate_badge(
+        left_text="framed",
+        left_color="#abcdef",
+        badge_name="framed.svg",
+        output_path=str(output_dir),
+        frame=FrameType.FRAME1,
+    )
+    assert (output_dir / "framed.svg").exists()
+
+
+def test_circle_frame_without_frame_raises(output_dir):
+    """CIRCLE_FRAME template without frame parameter must raise ValueError."""
+    generator = BadgeGenerator(template=BadgeTemplate.CIRCLE_FRAME)
+    with pytest.raises(ValueError, match="frame"):
+        generator.generate_badge(
+            left_text="framed",
+            left_color="#abcdef",
+            badge_name="framed.svg",
+            output_path=str(output_dir),
+        )
+
+
+def test_badge_name_missing_svg_suffix(badge_generator, output_dir):
+    """badge_name without .svg extension must raise ValueError."""
+    with pytest.raises(ValueError, match=".svg"):
+        badge_generator.generate_badge(
+            left_text="test",
+            left_color="#44cc11",
+            badge_name="no_extension",
+            output_path=str(output_dir),
+        )
+
+
+def test_get_base64_content_missing_file(badge_generator):
+    """get_base64_content with a nonexistent file must raise FileNotFoundError."""
+    with pytest.raises(FileNotFoundError):
+        badge_generator.get_base64_content("/nonexistent/path/logo.png")
+
+
+def test_logo_tinting_fallback_without_pillow(monkeypatch, output_dir):
+    """Without Pillow, _load_logo_image returns plain base64 without error."""
+    import badgeshield.badge_generator as badge_module
+
+    logo_path = output_dir / "logo.png"
+    # Write minimal valid PNG bytes
+    logo_path.write_bytes(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82")
+
+    monkeypatch.setattr(badge_module, "Image", None)
+
+    generator = BadgeGenerator()
+    result = generator._load_logo_image(str(logo_path), tint="#ff0000")
+    assert result is not None
+    assert isinstance(result, str)
+    assert len(result) > 0
