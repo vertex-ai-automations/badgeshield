@@ -1,7 +1,7 @@
 import pytest
 
-from custom_badges.badge_generator import BadgeBatchGenerator, BadgeGenerator
-from custom_badges.utils import BadgeColor, BadgeTemplate, FrameType
+from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
+from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
 
 BADGE_NAME = "test_output.svg"
 
@@ -142,7 +142,7 @@ def test_generate_badge_with_titles(badge_generator, output_dir):
 def test_text_width_fallback_handles_wide_characters(monkeypatch):
     """Fallback width estimation should differentiate wide and narrow glyphs."""
 
-    from custom_badges import badge_generator as badge_module
+    from badgeshield import badge_generator as badge_module
 
     monkeypatch.setattr(badge_module, "ImageFont", None)
 
