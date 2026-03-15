@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 
@@ -236,7 +237,7 @@ def coverage(
 
     try:
         pct = parse_coverage_xml(input, metric=metric)
-    except (FileNotFoundError, ValueError) as exc:
+    except (FileNotFoundError, ValueError, ET.ParseError) as exc:
         _error(str(exc))
         raise typer.Exit(1)
 

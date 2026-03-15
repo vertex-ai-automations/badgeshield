@@ -112,3 +112,12 @@ def test_coverage_cli_custom_label(tmp_path):
         "--output-path", str(tmp_path), "--left-text", "tested"
     ])
     assert result.exit_code == 0
+
+
+def test_coverage_cli_malformed_xml(tmp_path):
+    xml = tmp_path / "coverage.xml"
+    xml.write_text("not xml at all <<<")
+    result = runner.invoke(app, [
+        "coverage", str(xml), "--badge-name", "cov.svg"
+    ])
+    assert result.exit_code == 1
