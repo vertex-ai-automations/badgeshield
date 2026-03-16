@@ -18,7 +18,7 @@ from jinja2 import (
     select_autoescape,
 )
 
-from .utils import BadgeColor, BadgeTemplate, FrameType
+from .utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
 
 try:
     from PIL import Image, ImageColor, ImageFont
@@ -212,6 +212,7 @@ class BadgeGenerator:
         self,
         template: BadgeTemplate = BadgeTemplate.DEFAULT,
         log_level: Union[LogLevel, str] = LogLevel.WARNING,
+        style: Optional["BadgeStyle"] = None,
     ) -> None:
         """Initializes the BadgeGenerator with a specified template and log level.
 
@@ -221,11 +222,14 @@ class BadgeGenerator:
             The name of the SVG template file.
         log_level:
             The logging level. Options are 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'.
+        style:
+            Visual style preset. Defaults to :attr:`BadgeStyle.FLAT`.
         """
 
         self.template_name = str(template)
         self.template_enum = template  # kept for registry dispatch
         self._last_render_context: Optional[dict] = None
+        self.style = style if style is not None else BadgeStyle.FLAT
         self._setup_jinja2_env()
         self.logger = get_logger(name="badgeshield", log_level=log_level)
 
@@ -597,6 +601,24 @@ class BadgeGenerator:
             )
             return self.get_base64_content(logo)
 
+    def _style_context(self, style: "BadgeStyle", left_color_hex: str, id_suffix: str) -> dict:
+        """Compute Jinja2 context variables for the active style."""
+        if style == BadgeStyle.ROUNDED:
+            return dict(rx="8", gradient_id=None, gradient_stop=None,
+                        gradient_base=None, shadow_id=None)
+        if style == BadgeStyle.GRADIENT:
+            return dict(rx="3",
+                        gradient_id=f"grad{id_suffix}",
+                        gradient_stop=_lighten_hex(left_color_hex),
+                        gradient_base=left_color_hex,
+                        shadow_id=None)
+        if style == BadgeStyle.SHADOWED:
+            return dict(rx="3", gradient_id=None, gradient_stop=None,
+                        gradient_base=None, shadow_id=f"shadow{id_suffix}")
+        # FLAT (default)
+        return dict(rx="3", gradient_id=None, gradient_stop=None,
+                    gradient_base=None, shadow_id=None)
+
     def _render_default(
         self,
         left_text: str,
@@ -611,7 +633,9 @@ class BadgeGenerator:
         left_title: Optional[str],
         right_title: Optional[str],
         logo_tint: Optional[Union[str, "BadgeColor"]],
+        style: "BadgeStyle" = BadgeStyle.FLAT,
     ) -> str:
+        style_ctx = self._style_context(style, left_color, id_suffix)
         logo_data = self._load_logo_image(logo, logo_tint) if logo else None
         left_text_width = self._calculate_text_width(left_text)
         right_text_width = self._calculate_text_width(right_text) if right_text else 0
@@ -640,6 +664,7 @@ class BadgeGenerator:
             total_width=total_width,
             left_title=left_title,
             right_title=right_title,
+            **style_ctx,
         )
         self._last_render_context = context
         return self._get_template(self.template_name).render(**context)
@@ -658,7 +683,9 @@ class BadgeGenerator:
         left_title: Optional[str],
         right_title: Optional[str],
         logo_tint: Optional[Union[str, "BadgeColor"]],
+        style: "BadgeStyle" = BadgeStyle.FLAT,
     ) -> str:
+        style_ctx = self._style_context(style, left_color, id_suffix)
         logo_data = self._load_logo_image(logo, logo_tint) if logo else None
         font_size = self._calculate_font_size(left_text)
         context = dict(
@@ -670,6 +697,7 @@ class BadgeGenerator:
             left_link=left_link,
             left_title=left_title,
             font_size=font_size,
+            **style_ctx,
         )
         self._last_render_context = context
         return self._get_template(self.template_name).render(**context)
@@ -688,7 +716,9 @@ class BadgeGenerator:
         left_title: Optional[str],
         right_title: Optional[str],
         logo_tint: Optional[Union[str, "BadgeColor"]],
+        style: "BadgeStyle" = BadgeStyle.FLAT,
     ) -> str:
+        style_ctx = self._style_context(style, left_color, id_suffix)
         logo_data = self._load_logo_image(logo, logo_tint) if logo else None
         circle_radius = 35
         logo_width, logo_height = self._calculate_logo_size(circle_radius)
@@ -705,6 +735,7 @@ class BadgeGenerator:
             logo_width=logo_width,
             logo_height=logo_height,
             id_suffix=id_suffix,
+            **style_ctx,
         )
         self._last_render_context = context
         return self._get_template(self.template_name).render(**context)
@@ -723,6 +754,7 @@ class BadgeGenerator:
         left_title: Optional[str],
         right_title: Optional[str],
         logo_tint: Optional[Union[str, BadgeColor]],
+        style: "BadgeStyle" = BadgeStyle.FLAT,
     ) -> str:
         """Renders the badge content using the provided template and parameters.
 
@@ -763,6 +795,7 @@ class BadgeGenerator:
             self,
             left_text, left_color, right_text, right_color, logo, frame,
             left_link, right_link, id_suffix, left_title, right_title, logo_tint,
+            style,
         )
 
     def generate_badge(
@@ -848,6 +881,7 @@ class BadgeGenerator:
                 left_title,
                 right_title,
                 logo_tint,
+                self.style,
             )
 
             with open(full_path, "w", encoding="utf-8") as file:

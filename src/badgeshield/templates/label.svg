@@ -11,12 +11,25 @@
 
   <defs>
     <clipPath id="{{ id_round }}">
-      <rect width="{{ total_width }}" height="20" rx="3" fill="#fff"/>
+      <rect width="{{ total_width }}" height="20" rx="{{ rx }}" fill="#fff"/>
     </clipPath>
+    {% if gradient_id %}
+    <linearGradient id="{{ gradient_id }}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="{{ gradient_stop }}"/>
+      <stop offset="100%" stop-color="{{ gradient_base }}"/>
+    </linearGradient>
+    {% endif %}
+    {% if shadow_id %}
+    <filter id="{{ shadow_id }}">
+      <feDropShadow dx="1" dy="1" stdDeviation="1" flood-opacity="0.3"/>
+    </filter>
+    {% endif %}
   </defs>
 
   <g clip-path="url(#{{ id_round }})">
-    <rect width="{{ left_width if right_text else total_width }}" height="20" fill="{{ left_color }}">
+    <rect width="{{ left_width if right_text else total_width }}" height="20"
+      fill="{% if gradient_id %}url(#{{ gradient_id }}){% else %}{{ left_color }}{% endif %}"
+      {% if shadow_id %}filter="url(#{{ shadow_id }})"{% endif %}>
       {% if left_title %}
         <title>{{ left_title }}</title>
       {% endif %}

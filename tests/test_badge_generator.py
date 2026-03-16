@@ -500,6 +500,51 @@ class TestBadgeStyle:
         assert BadgeTemplate.BANNER.value == "templates/banner.svg"
 
 
+class TestBadgeStyleRendering:
+    """Tests for ROUNDED, GRADIENT, SHADOWED style presets on existing templates."""
+
+    def _generate_svg(self, template, style, tmp_path, **extra):
+        gen = BadgeGenerator(template=template, style=style)
+        gen.generate_badge(
+            left_text="build", left_color=BadgeColor.GREEN,
+            badge_name="test.svg", output_path=str(tmp_path), **extra
+        )
+        return (tmp_path / "test.svg").read_text(encoding="utf-8")
+
+    def test_rounded_label_has_rx8(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.ROUNDED, tmp_path)
+        assert 'rx="8"' in svg
+
+    def test_gradient_label_has_linear_gradient(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.GRADIENT, tmp_path)
+        assert "<linearGradient" in svg
+
+    def test_gradient_circle_has_radial_gradient(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.CIRCLE, BadgeStyle.GRADIENT, tmp_path)
+        assert "<radialGradient" in svg
+
+    def test_shadowed_label_has_drop_shadow(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.SHADOWED, tmp_path)
+        assert "<feDropShadow" in svg
+
+    def test_flat_style_no_gradient_no_shadow(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.FLAT, tmp_path)
+        assert "<linearGradient" not in svg
+        assert "<feDropShadow" not in svg
+        assert 'rx="8"' not in svg
+
+    def test_style_defaults_to_flat(self, tmp_path):
+        """BadgeGenerator without explicit style behaves like FLAT."""
+        gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+        gen.generate_badge(
+            left_text="x", left_color=BadgeColor.GREEN,
+            badge_name="test.svg", output_path=str(tmp_path)
+        )
+        svg = (tmp_path / "test.svg").read_text(encoding="utf-8")
+        assert "<linearGradient" not in svg
+        assert "<feDropShadow" not in svg
+
+
 class TestLightenHex:
     def test_black_lightens(self):
         from badgeshield.badge_generator import _lighten_hex
