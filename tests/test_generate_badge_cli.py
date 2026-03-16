@@ -6,6 +6,9 @@ from typer.testing import CliRunner
 from badgeshield.generate_badge_cli import app
 
 pytestmark = pytest.mark.usefixtures("block_network")
+# NOTE: TestAuditCommand (added in Task 4) must use a class-level pytestmark
+# to override this module-level mark — audit tests use filesystem I/O only, not network,
+# but structuring them in their own class without block_network avoids confusion.
 
 runner = CliRunner(mix_stderr=False)
 

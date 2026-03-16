@@ -21,6 +21,7 @@ def output_dir(tmp_path):
 # Network audit performed 2026-03-15: no dependency makes outbound calls.
 @pytest.fixture
 def block_network(monkeypatch):
+    """Block all outbound network calls. Raises OSError if any test opens a socket."""
     import socket
     def blocked(*args, **kwargs):
         raise OSError("Network blocked by test fixture")
