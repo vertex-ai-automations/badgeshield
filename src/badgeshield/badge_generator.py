@@ -258,14 +258,20 @@ class BadgeGenerator:
         return bool(re.match(r"^#([A-Fa-f0-9]{6})$", color))
 
     def _get_font(self) -> Optional["ImageFont.ImageFont"]:
-        """Return a lazily instantiated font object for text measurements."""
-
+        """Return a lazily instantiated font object, preferring the bundled DejaVuSans."""
         if ImageFont is None:
             return None
 
         if not hasattr(self, "_badge_font"):
             try:
-                self._badge_font = ImageFont.truetype("DejaVuSans.ttf", 110)
+                import sys
+                from pathlib import Path as _Path
+                if sys.version_info >= (3, 9):
+                    from importlib.resources import files
+                    font_path = str(files("badgeshield") / "fonts" / "DejaVuSans.ttf")
+                else:
+                    font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
+                self._badge_font = ImageFont.truetype(font_path, 110)
             except OSError:
                 self._badge_font = ImageFont.load_default()
         return self._badge_font

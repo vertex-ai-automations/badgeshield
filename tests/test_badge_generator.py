@@ -442,6 +442,35 @@ _SVG_AUDIT_PARAMS = [
     ),
 ]
 
+def test_get_font_uses_bundled_font(monkeypatch):
+    """_get_font() must return the bundled DejaVuSans, not fall back to the default bitmap font."""
+    from badgeshield.badge_generator import BadgeGenerator, ImageFont
+    if ImageFont is None:
+        pytest.skip("Pillow not installed")
+
+    original_truetype = ImageFont.truetype
+
+    def patched_truetype(path, size):
+        import os
+        # Allow only the bundled path; block all system paths
+        if "badgeshield" in path and "fonts" in path:
+            return original_truetype(path, size)
+        raise OSError(f"Blocked system font path: {path}")
+
+    monkeypatch.setattr(ImageFont, "truetype", patched_truetype)
+
+    gen = BadgeGenerator()
+    # Clear cached font to force a fresh load
+    if hasattr(gen, "_badge_font"):
+        del gen._badge_font
+
+    font = gen._get_font()
+    assert font is not None
+    default_font = ImageFont.load_default()
+    assert type(font) != type(default_font), \
+        "_get_font() returned the fallback bitmap font instead of the bundled TrueType font"
+
+
 @pytest.mark.parametrize("template,kwargs", _SVG_AUDIT_PARAMS,
                          ids=["DEFAULT", "CIRCLE", "CIRCLE_FRAME"])
 def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
