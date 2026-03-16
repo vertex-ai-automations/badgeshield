@@ -482,3 +482,51 @@ def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
     stripped = re.sub(r'xmlns(?::\w+)?="https?://[^"]*"', '', svg_content)
     assert not re.search(r'https?://', stripped), \
         f"Template {template} generated SVG with external URLs"
+
+
+from badgeshield.utils import BadgeStyle
+
+
+class TestBadgeStyle:
+    def test_badge_style_values_exist(self):
+        assert BadgeStyle.FLAT.value == "flat"
+        assert BadgeStyle.ROUNDED.value == "rounded"
+        assert BadgeStyle.GRADIENT.value == "gradient"
+        assert BadgeStyle.SHADOWED.value == "shadowed"
+
+    def test_badge_style_exported_from_package(self):
+        import badgeshield
+        assert hasattr(badgeshield, "BadgeStyle")
+
+    def test_pill_and_banner_in_badge_template(self):
+        assert BadgeTemplate.PILL.value == "templates/pill.svg"
+        assert BadgeTemplate.BANNER.value == "templates/banner.svg"
+
+
+class TestLightenHex:
+    def test_black_lightens(self):
+        from badgeshield.badge_generator import _lighten_hex
+        assert _lighten_hex("#000000") == "#333333"
+
+    def test_white_unchanged(self):
+        from badgeshield.badge_generator import _lighten_hex
+        assert _lighten_hex("#ffffff") == "#FFFFFF"
+
+    def test_mid_tone(self):
+        from badgeshield.badge_generator import _lighten_hex
+        # Run once with UPDATE_SNAPSHOTS=1 to establish canonical value
+        import os
+        result = _lighten_hex("#4c1d95")
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
+            os.makedirs("tests/snapshots", exist_ok=True)
+            open(snapshot_path, "w").write(result)
+        else:
+            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
+            if not os.path.exists(snapshot_path):
+                pytest.fail(
+                    f"Snapshot missing: {snapshot_path}. "
+                    "Run UPDATE_SNAPSHOTS=1 pytest to generate it."
+                )
+            expected = open(snapshot_path).read().strip()
+            assert result == expected

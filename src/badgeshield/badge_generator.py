@@ -1,4 +1,5 @@
 import base64
+import colorsys
 import os
 import re
 import threading
@@ -23,6 +24,16 @@ try:
     from PIL import Image, ImageColor, ImageFont
 except ImportError:
     Image = ImageColor = ImageFont = None
+
+
+def _lighten_hex(hex_color: str, factor: float = 0.2) -> str:
+    """Return a lighter version of a hex color by increasing HSL lightness."""
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16)/255, int(h[2:4], 16)/255, int(h[4:6], 16)/255
+    hue, light, sat = colorsys.rgb_to_hls(r, g, b)  # colorsys uses HLS order
+    light = min(1.0, light + factor * (1.0 - light))
+    r2, g2, b2 = colorsys.hls_to_rgb(hue, light, sat)
+    return "#{:02X}{:02X}{:02X}".format(round(r2 * 255), round(g2 * 255), round(b2 * 255))
 
 
 class BadgeBatchGenerator:
