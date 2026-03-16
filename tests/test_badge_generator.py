@@ -546,6 +546,40 @@ class TestBadgeStyleRendering:
         assert "<feDropShadow" not in svg
 
 
+    def test_pill_template_basic(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.PILL)
+        gen.generate_badge(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="pill_basic.svg",
+            output_path=str(tmp_path),
+        )
+        svg = (tmp_path / "pill_basic.svg").read_text()
+        assert 'rx="10"' in svg  # pill always has rx=10
+
+    def test_pill_snapshot(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.PILL)
+        gen.generate_badge(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="pill_basic.svg",
+            output_path=str(tmp_path),
+        )
+        actual = (tmp_path / "pill_basic.svg").read_text()
+        snapshot_path = Path(__file__).parent / "snapshots" / "pill_basic.svg"
+        import os
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_path.write_text(actual)
+        if not snapshot_path.exists():
+            pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
+        assert actual == snapshot_path.read_text()
+
+
 class TestLightenHex:
     def test_black_lightens(self):
         from badgeshield.badge_generator import _lighten_hex

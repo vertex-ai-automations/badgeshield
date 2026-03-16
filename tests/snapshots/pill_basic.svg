@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="109" height="20">
+  <defs>
+    <clipPath id="pill_clip">
+      <rect width="109" height="20" rx="10" ry="10"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#pill_clip)">
+    <rect width="47" height="20"
+          fill="#555555"/>
+    <rect x="47" width="62" height="20" fill="#44cc11"/>
+  </g>
+  <text x="23" y="14" font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+        font-size="11" fill="#fff" fill-opacity=".9" text-anchor="middle">build</text>
+  <text x="78" y="14" font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+        font-size="11" fill="#fff" fill-opacity=".9" text-anchor="middle">passing</text>
+</svg>
