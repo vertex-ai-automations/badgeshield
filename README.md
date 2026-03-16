@@ -33,7 +33,6 @@
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Coverage Badge](#-coverage-badge)
-- [In-Memory Rendering](#-in-memory-rendering)
 - [CLI Usage](#%EF%B8%8F-cli-usage)
 - [Batch Generation](#-batch-generation)
 - [Contributing](#-contributing)
@@ -42,20 +41,20 @@
 
 ## 📣 Overview
 
-**BadgeShield** generates customizable SVG badges for GitLab, GitHub, and anywhere you can embed SVG. Three badge templates (rectangular, circle, framed-circle), 51 built-in colors, Pillow-powered font metrics, logo embedding with color tinting, automatic coverage badges from `coverage.xml`, and a Typer CLI with Rich progress bars.
+**BadgeShield** generates customizable SVG badges for GitLab, GitHub, and anywhere you can embed SVG. Five badge templates, four visual styles, 51 built-in colors, Pillow-powered font metrics, logo embedding with color tinting, automatic coverage badges from `coverage.xml`, and a Typer CLI with Rich progress bars and an SVG audit subcommand.
 
 ---
 
 ## 💡 Features
 
-- **3 templates** — `DEFAULT` (two-part rectangular), `CIRCLE`, and `CIRCLE_FRAME` with 11 PNG overlay frames.
+- **5 templates** — `DEFAULT` (two-part rectangular), `PILL` (fully rounded), `CIRCLE`, `CIRCLE_FRAME` with 11 PNG overlay frames, and `BANNER` (icon-zone + text).
+- **4 visual styles** — `FLAT`, `ROUNDED`, `GRADIENT`, and `SHADOWED` via `BadgeStyle` enum or `--style` CLI flag.
 - **51 built-in colors** — `BadgeColor` enum or any `#RRGGBB` hex string.
 - **Accurate text sizing** — font widths measured via Pillow (DejaVuSans) with a fallback estimator when Pillow is absent.
 - **Logo support** — embed PNG/JPEG logos with optional color tinting.
 - **Coverage badge** — read `coverage.xml` and auto-generate a correctly-colored badge in one command.
-- **In-memory rendering** — `render_badge()` returns a `BadgeSVG` string with `.to_bytes()`, `.to_data_uri()`, and `.save()` helpers.
-- **Concurrent batch** — generate hundreds of badges in parallel from a JSON config.
-- **Modern CLI** — Typer + Rich: progress bar, error panels, summary table.
+- **Concurrent batch** — generate hundreds of badges in parallel from a JSON config; per-entry `style` overrides the CLI flag.
+- **Modern CLI** — Typer + Rich: progress bar, error panels, summary table, and `audit` subcommand.
 - **Python API** — import and generate from any script or CI job.
 
 ---
@@ -82,12 +81,12 @@ pip install --upgrade badgeshield
 
 ## 🚀 Quick Start
 
-### Python API — write to file
+### Python API — DEFAULT template
 
 ```python
-from badgeshield import BadgeGenerator, BadgeTemplate
+from badgeshield import BadgeGenerator, BadgeStyle, BadgeTemplate
 
-generator = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+generator = BadgeGenerator(template=BadgeTemplate.DEFAULT, style=BadgeStyle.GRADIENT)
 generator.generate_badge(
     left_text="build",
     left_color="#555555",
@@ -98,25 +97,24 @@ generator.generate_badge(
 )
 ```
 
-### Python API — in-memory
+`style` is set at generator construction time and applies to all badges that instance generates. Options: `FLAT` (default), `ROUNDED`, `GRADIENT`, `SHADOWED`.
+
+### PILL template
 
 ```python
-from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
+from badgeshield import BadgeGenerator, BadgeTemplate
 
-gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
-svg: BadgeSVG = gen.render_badge(
+generator = BadgeGenerator(template=BadgeTemplate.PILL)
+generator.generate_badge(
     left_text="build",
     left_color="#555555",
     right_text="passing",
     right_color="#44cc11",
+    badge_name="build-pill.svg",
 )
-
-svg.to_bytes()       # b"<svg ..."
-svg.to_data_uri()    # "data:image/svg+xml;base64,..."
-svg.save("out.svg")  # write to disk
 ```
 
-### Circle template
+### CIRCLE template
 
 ```python
 from badgeshield import BadgeGenerator, BadgeTemplate
@@ -129,7 +127,7 @@ generator.generate_badge(
 )
 ```
 
-### Framed circle (CIRCLE_FRAME)
+### CIRCLE_FRAME template
 
 ```python
 from badgeshield import BadgeGenerator, BadgeTemplate, FrameType
@@ -142,6 +140,21 @@ generator.generate_badge(
     frame=FrameType.FRAME1,
     logo="path/to/avatar.png",
     logo_tint="#ffffff",
+)
+```
+
+### BANNER template
+
+```python
+from badgeshield import BadgeGenerator, BadgeTemplate
+
+generator = BadgeGenerator(template=BadgeTemplate.BANNER)
+generator.generate_badge(
+    left_text="badgeshield",
+    left_color="#1a1a2e",
+    right_text="v1.0",
+    right_color="#16213e",
+    badge_name="banner.svg",
 )
 ```
 
@@ -159,7 +172,7 @@ badgeshield coverage coverage.xml \
   --output-path ./badges
 ```
 
-The color is chosen automatically using shields.io thresholds:
+The color is chosen automatically based on these thresholds:
 
 | Coverage | Color |
 |----------|-------|
@@ -193,38 +206,6 @@ gen.generate_badge(
 
 ---
 
-## 🧠 In-Memory Rendering
-
-`render_badge()` returns a [`BadgeSVG`](https://vertex-ai-automations.github.io/badgeshield/reference/batch_generator/) string with no file written. Use it to serve badges over HTTP, inline them as data URIs, or inspect SVG content in tests.
-
-```python
-from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
-
-gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
-svg: BadgeSVG = gen.render_badge(
-    left_text="coverage",
-    left_color="#555555",
-    right_text="94%",
-    right_color="#44cc11",
-)
-
-# Serve over HTTP
-response.body = svg.to_bytes()
-
-# Inline in a web page
-html = f'<img src="{svg.to_data_uri()}" alt="coverage 94%">'
-
-# Test without touching the filesystem
-assert "94%" in svg
-
-# Write to disk when ready
-svg.save("./badges/coverage.svg")
-```
-
-`render_badge()` accepts every parameter that `generate_badge()` does, except `badge_name` and `output_path`.
-
----
-
 ## 🖥️ CLI Usage
 
 ### Coverage badge
@@ -243,9 +224,12 @@ badgeshield single \
   --left-color "#555555" \
   --right-text "94%" \
   --right-color "#44cc11" \
+  --style gradient \
   --badge-name coverage.svg \
   --output-path ./badges
 ```
+
+`--style` accepts `flat` (default), `rounded`, `gradient`, or `shadowed` (case-insensitive).
 
 With a logo and links:
 
@@ -272,6 +256,15 @@ badgeshield single \
   --badge-name initials.svg
 ```
 
+### SVG audit
+
+Verify that a generated SVG contains no external resource references:
+
+```bash
+badgeshield audit badges/build.svg          # exits 0 if clean, 1 if violations found
+badgeshield audit badges/build.svg --json   # machine-readable JSON output
+```
+
 ---
 
 ## ⚡ Batch Generation
@@ -296,7 +289,8 @@ badgeshield batch badges.json --output-path ./badges --max-workers 8
     "left_text": "coverage",
     "left_color": "#555555",
     "right_text": "94%",
-    "right_color": "#44cc11"
+    "right_color": "#44cc11",
+    "style": "gradient"
   },
   {
     "badge_name": "version.svg",
@@ -306,17 +300,19 @@ badgeshield batch badges.json --output-path ./badges --max-workers 8
 ]
 ```
 
+A per-entry `"style"` key overrides the CLI `--style` flag for that badge.
+
 After the run, a Rich summary table shows which badges succeeded or failed.
 
 ### Python API
 
 ```python
-from badgeshield import BadgeBatchGenerator, BadgeTemplate
+from badgeshield import BadgeBatchGenerator, BadgeStyle, BadgeTemplate
 
 batch = BadgeBatchGenerator(max_workers=4)
 badges = [
-    {"badge_name": "build.svg",    "left_text": "build",    "left_color": "GREEN",   "output_path": "./out", "template": BadgeTemplate.DEFAULT},
-    {"badge_name": "coverage.svg", "left_text": "coverage", "left_color": "#555",    "right_text": "94%", "right_color": "#44cc11", "output_path": "./out", "template": BadgeTemplate.DEFAULT},
+    {"badge_name": "build.svg",    "left_text": "build",    "left_color": "GREEN", "output_path": "./out", "template": BadgeTemplate.DEFAULT, "style": BadgeStyle.FLAT},
+    {"badge_name": "coverage.svg", "left_text": "coverage", "left_color": "#555",  "right_text": "94%", "right_color": "#44cc11", "output_path": "./out", "template": BadgeTemplate.DEFAULT, "style": BadgeStyle.GRADIENT},
 ]
 
 try:

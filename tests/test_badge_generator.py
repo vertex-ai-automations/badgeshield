@@ -77,8 +77,8 @@ def test_generate_badge_without_gradients_or_shadows(badge_generator, output_dir
 
     assert render_context["left_color"] == "#44cc11"
     assert render_context["right_color"] == "#222222"
-    assert "gradient_defs" not in render_context
-    assert "drop_shadow" not in render_context
+    assert render_context["gradient_id"] is None
+    assert render_context["shadow_id"] is None
 
 
 def test_circle_badge_renders_flat_colors(output_dir):
@@ -95,8 +95,8 @@ def test_circle_badge_renders_flat_colors(output_dir):
     assert context is not None
 
     assert context["left_color"] == "#123456"
-    assert "gradient_defs" not in context
-    assert "drop_shadow" not in context
+    assert context["gradient_id"] is None
+    assert context["shadow_id"] is None
 
 
 def test_circle_frame_badge_renders_without_effects(output_dir):
@@ -114,8 +114,8 @@ def test_circle_frame_badge_renders_without_effects(output_dir):
     assert context is not None
 
     assert context["left_color"] == "#abcdef"
-    assert "gradient_defs" not in context
-    assert "drop_shadow" not in context
+    assert context["gradient_id"] is None
+    assert context["shadow_id"] is None
 
 
 def test_generate_badge_with_links(badge_generator, output_dir):
@@ -240,13 +240,19 @@ def test_path_traversal_rejected(badge_generator, output_dir):
         )
 
 
-def test_absolute_badge_name_rejected(badge_generator, output_dir):
-    """Absolute paths in badge_name must raise ValueError."""
+@pytest.mark.parametrize("evil_name", [
+    "/tmp/evil.svg",
+    "/etc/evil.svg",
+    "C:\\evil.svg",
+    "C:/evil.svg",
+])
+def test_absolute_badge_name_rejected(badge_generator, output_dir, evil_name):
+    """Absolute paths in badge_name must raise ValueError on all platforms."""
     with pytest.raises(ValueError):
         badge_generator.generate_badge(
             left_text="test",
             left_color="#44cc11",
-            badge_name="/tmp/evil.svg",
+            badge_name=evil_name,
             output_path=str(output_dir),
         )
 
@@ -589,15 +595,15 @@ class TestBadgeStyleRendering:
             badge_name="pill_basic.svg",
             output_path=str(tmp_path),
         )
-        actual = (tmp_path / "pill_basic.svg").read_text()
+        actual = (tmp_path / "pill_basic.svg").read_text(encoding="utf-8")
         snapshot_path = Path(__file__).parent / "snapshots" / "pill_basic.svg"
         import os
         if os.environ.get("UPDATE_SNAPSHOTS"):
             snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-            snapshot_path.write_text(actual)
+            snapshot_path.write_text(actual, encoding="utf-8")
         if not snapshot_path.exists():
             pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
-        assert actual == snapshot_path.read_text()
+        assert actual == snapshot_path.read_text(encoding="utf-8")
 
     def test_banner_template_basic(self, tmp_path):
         gen = BadgeGenerator(template=BadgeTemplate.BANNER)
@@ -624,15 +630,15 @@ class TestBadgeStyleRendering:
             badge_name="banner_basic.svg",
             output_path=str(tmp_path),
         )
-        actual = (tmp_path / "banner_basic.svg").read_text()
+        actual = (tmp_path / "banner_basic.svg").read_text(encoding="utf-8")
         snapshot_path = Path(__file__).parent / "snapshots" / "banner_basic.svg"
         import os
         if os.environ.get("UPDATE_SNAPSHOTS"):
             snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-            snapshot_path.write_text(actual)
+            snapshot_path.write_text(actual, encoding="utf-8")
         if not snapshot_path.exists():
             pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
-        assert actual == snapshot_path.read_text()
+        assert actual == snapshot_path.read_text(encoding="utf-8")
 
 
 class TestLightenHex:
@@ -646,19 +652,17 @@ class TestLightenHex:
 
     def test_mid_tone(self):
         from badgeshield.badge_generator import _lighten_hex
-        # Run once with UPDATE_SNAPSHOTS=1 to establish canonical value
         import os
         result = _lighten_hex("#4c1d95")
+        snapshot_path = Path(__file__).parent / "snapshots" / "_lighten_hex_4c1d95.txt"
         if os.environ.get("UPDATE_SNAPSHOTS"):
-            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
-            os.makedirs("tests/snapshots", exist_ok=True)
-            open(snapshot_path, "w").write(result)
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_path.write_text(result, encoding="utf-8")
         else:
-            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
-            if not os.path.exists(snapshot_path):
+            if not snapshot_path.exists():
                 pytest.fail(
                     f"Snapshot missing: {snapshot_path}. "
                     "Run UPDATE_SNAPSHOTS=1 pytest to generate it."
                 )
-            expected = open(snapshot_path).read().strip()
+            expected = snapshot_path.read_text(encoding="utf-8").strip()
             assert result == expected

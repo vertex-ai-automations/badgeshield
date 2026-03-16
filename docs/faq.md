@@ -4,13 +4,15 @@
 
 ### What badge templates are available?
 
-Three templates are included:
+Five templates are included:
 
 | Template | Shape | Notes |
 |----------|-------|-------|
-| `DEFAULT` | Rectangular, two-part | Width is calculated from text; supports logos, links |
+| `DEFAULT` | Rectangular, two-part | Width calculated from text; supports logos, links, titles |
+| `PILL` | Fully-rounded two-part | Always rx=10 regardless of style |
 | `CIRCLE` | Circle | Font size shrinks for longer text |
 | `CIRCLE_FRAME` | Circle with decorative frame | Requires a `FrameType` (FRAME1–FRAME11) |
+| `BANNER` | Wide banner | 28px icon-zone on left (first letter of `left_text`), text section on right |
 
 ---
 
@@ -99,7 +101,8 @@ An error panel is printed to stdout describing the cause. Common reasons:
 
 - **Invalid color**: unrecognized `BadgeColor` name or malformed hex string.
 - **Missing `.svg` suffix**: `--badge-name` must end with `.svg`.
-- **Invalid template**: must be `DEFAULT`, `CIRCLE`, or `CIRCLE_FRAME`.
+- **Invalid template**: must be `DEFAULT`, `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER`.
+- **Invalid style**: must be `FLAT`, `ROUNDED`, `GRADIENT`, or `SHADOWED`.
 - **Missing `--frame`**: required when `--template CIRCLE_FRAME` is used.
 - **Output path not found**: the `--output-path` directory must already exist.
 
@@ -185,42 +188,37 @@ gen.generate_badge(..., badge_name="coverage.svg", id_suffix="-coverage")
 
 ---
 
-### Can I get the SVG as a string without writing a file?
+### Can I apply visual styles to badges?
 
-Yes — use `render_badge()` instead of `generate_badge()`. It returns a `BadgeSVG` string with no file I/O:
+Yes — pass a `BadgeStyle` value to `BadgeGenerator` at construction time:
 
 ```python
-from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
+from badgeshield import BadgeGenerator, BadgeStyle, BadgeTemplate
 
-gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
-svg: BadgeSVG = gen.render_badge(
+gen = BadgeGenerator(template=BadgeTemplate.DEFAULT, style=BadgeStyle.GRADIENT)
+gen.generate_badge(
     left_text="build",
     left_color="#555555",
     right_text="passing",
     right_color="#44cc11",
+    badge_name="build.svg",
 )
-
-# Use anywhere a string is accepted
-print(len(svg))          # character count
-assert "<svg" in svg     # plain string checks work
-
-# Built-in conversions
-raw_bytes = svg.to_bytes()
-data_uri  = svg.to_data_uri()   # "data:image/svg+xml;base64,..."
-svg.save("./badges/build.svg")  # write to disk when ready
 ```
+
+Available styles: `FLAT` (default), `ROUNDED`, `GRADIENT`, `SHADOWED`. The `--style` CLI flag accepts the same values (case-insensitive).
 
 ---
 
-### When should I use `render_badge()` vs `generate_badge()`?
+### Can I verify my SVG has no external URLs?
 
-| Use case | Method |
-|----------|--------|
-| Writing a badge to a file (CI pipeline, batch) | `generate_badge()` |
-| Serving a badge over HTTP | `render_badge()` + `.to_bytes()` |
-| Embedding a badge inline in HTML | `render_badge()` + `.to_data_uri()` |
-| Testing badge content without touching the filesystem | `render_badge()` |
-| Generating many badges and deciding later where to store them | `render_badge()` |
+Yes — use the `audit` subcommand:
+
+```bash
+badgeshield audit badges/build.svg
+badgeshield audit badges/build.svg --json   # machine-readable output
+```
+
+Exit code `0` means clean; `1` means external URLs were found; `2` means the file could not be parsed.
 
 ---
 

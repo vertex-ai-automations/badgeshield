@@ -6,7 +6,7 @@ BadgeShield ships a Typer-powered CLI with Rich progress bars and error panels.
 badgeshield --help
 ```
 
-Three subcommands are available: `coverage`, `single`, and `batch`.
+Four subcommands are available: `coverage`, `single`, `batch`, and `audit`.
 
 ---
 
@@ -87,7 +87,8 @@ badgeshield single --help
 | `--left-color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
 | `--badge-name` | ✅ | Output SVG filename — must end with `.svg` |
 | `--output-path` | | Output directory; defaults to CWD |
-| `--template` | | `DEFAULT` (default), `CIRCLE`, or `CIRCLE_FRAME` |
+| `--template` | | `DEFAULT` (default), `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER` |
+| `--style` | | `FLAT` (default), `ROUNDED`, `GRADIENT`, or `SHADOWED` |
 | `--right-text` | | Text on the right segment |
 | `--right-color` | | Color for the right segment |
 | `--frame` | | `FRAME1`–`FRAME11`; required for `CIRCLE_FRAME` |
@@ -135,6 +136,20 @@ badgeshield single \
   --output-path ./badges
 ```
 
+**Pill template with gradient style:**
+
+```bash
+badgeshield single \
+  --left-text "build" \
+  --left-color "#555555" \
+  --right-text "passing" \
+  --right-color "#44cc11" \
+  --template PILL \
+  --style gradient \
+  --badge-name build-pill.svg \
+  --output-path ./badges
+```
+
 **Circle frame template:**
 
 ```bash
@@ -144,6 +159,19 @@ badgeshield single \
   --template CIRCLE_FRAME \
   --frame FRAME1 \
   --badge-name initials.svg \
+  --output-path ./badges
+```
+
+**Banner template:**
+
+```bash
+badgeshield single \
+  --left-text "badgeshield" \
+  --left-color "#1a1a2e" \
+  --right-text "v1.0" \
+  --right-color "#16213e" \
+  --template BANNER \
+  --badge-name banner.svg \
   --output-path ./badges
 ```
 
@@ -178,7 +206,8 @@ badgeshield batch --help
 |-----------------|:--------:|-------------|
 | `CONFIG_FILE` (positional) | ✅ | Path to JSON config file |
 | `--output-path` | | Output directory; defaults to CWD |
-| `--template` | | `DEFAULT` (default), `CIRCLE`, or `CIRCLE_FRAME` |
+| `--template` | | `DEFAULT` (default), `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER` |
+| `--style` | | `FLAT` (default), `ROUNDED`, `GRADIENT`, or `SHADOWED` |
 | `--log-level` | | Logging verbosity |
 | `--max-workers` | | Parallel threads (default: 4) |
 
@@ -231,5 +260,60 @@ A Rich progress bar tracks completion. After all badges are processed, a summary
 
 Failures are shown in red with the error message. The command exits with code `1` if any badge fails.
 
+Per-entry `style` keys in the JSON override the CLI `--style` flag for that badge:
+
+```json
+[
+  { "badge_name": "a.svg", "left_text": "alpha", "left_color": "GREEN", "style": "gradient" },
+  { "badge_name": "b.svg", "left_text": "beta",  "left_color": "BLUE" }
+]
+```
+
 !!! tip "CIRCLE_FRAME in batch mode"
     When using `--template CIRCLE_FRAME`, every entry in the JSON config must include a `"frame"` key (e.g. `"frame": "FRAME1"`).
+
+---
+
+## SVG audit
+
+Scan a generated SVG for external resource references (URLs in attributes or `style` properties). Useful in CI to confirm all assets are inlined.
+
+```bash
+badgeshield audit --help
+```
+
+### Parameters
+
+| Argument / Flag | Required | Description |
+|-----------------|:--------:|-------------|
+| `SVG_FILE` (positional) | ✅ | Path to the SVG file to inspect |
+| `--json` | | Emit machine-readable JSON instead of a Rich table |
+
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Clean — no external URLs found |
+| `1` | Violations found |
+| `2` | File not found or not valid SVG/XML |
+
+### Examples
+
+**Human-readable output:**
+
+```bash
+badgeshield audit badges/build.svg
+```
+
+**CI-friendly JSON output:**
+
+```bash
+badgeshield audit badges/build.svg --json
+# {"clean": true, "violations": []}
+```
+
+**Integrate in CI (fails if any external URL is present):**
+
+```bash
+for f in badges/*.svg; do badgeshield audit "$f"; done
+```

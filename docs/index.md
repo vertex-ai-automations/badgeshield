@@ -30,15 +30,22 @@ hide:
 
 ## Why BadgeShield?
 
-BadgeShield gives you pixel-perfect SVG badges — rectangular, circle, or framed — with accurate text sizing powered by real font metrics. Drop it into a CI pipeline, a Python script, or call it from the terminal.
+BadgeShield gives you pixel-perfect SVG badges — rectangular, pill, circle, framed, or banner — with accurate text sizing powered by real font metrics. Drop it into a CI pipeline, a Python script, or call it from the terminal.
 
 <div class="feature-grid" markdown>
 
 <div class="feature-item" markdown>
 <span class="feature-icon">🎨</span>
-**3 Templates**
+**5 Templates**
 
-Choose `DEFAULT` (two-part horizontal), `CIRCLE`, or `CIRCLE_FRAME` with one of 11 PNG frame overlays.
+Choose `DEFAULT` (two-part rectangular), `PILL` (fully rounded), `CIRCLE`, `CIRCLE_FRAME` with 11 PNG overlays, or `BANNER` (icon-zone + text).
+</div>
+
+<div class="feature-item" markdown>
+<span class="feature-icon">✨</span>
+**4 Visual Styles**
+
+Apply `FLAT`, `ROUNDED`, `GRADIENT`, or `SHADOWED` to any template via `--style` or the `BadgeStyle` enum.
 </div>
 
 <div class="feature-item" markdown>
@@ -73,14 +80,7 @@ Generate hundreds of badges in parallel from a single JSON config using `BadgeBa
 <span class="feature-icon">🖥️</span>
 **Modern CLI**
 
-Typer-powered CLI with Rich progress bars, error panels, and a summary table after batch runs.
-</div>
-
-<div class="feature-item" markdown>
-<span class="feature-icon">🧠</span>
-**In-Memory Rendering**
-
-`render_badge()` returns a `BadgeSVG` string — no file I/O. Convert to bytes, a data URI, or save later.
+Typer-powered CLI with Rich progress bars, error panels, summary table, and an `audit` subcommand that detects external URL violations in SVG output.
 </div>
 
 </div>
@@ -89,12 +89,12 @@ Typer-powered CLI with Rich progress bars, error panels, and a summary table aft
 
 ## Quick Look
 
-=== "Python API — file"
+=== "Python API"
 
     ```python
-    from badgeshield import BadgeGenerator, BadgeTemplate
+    from badgeshield import BadgeGenerator, BadgeTemplate, BadgeStyle
 
-    generator = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+    generator = BadgeGenerator(template=BadgeTemplate.DEFAULT, style=BadgeStyle.GRADIENT)
     generator.generate_badge(
         left_text="build",
         left_color="DARK_GREEN",
@@ -102,23 +102,6 @@ Typer-powered CLI with Rich progress bars, error panels, and a summary table aft
         right_color="#44cc11",
         badge_name="build.svg",
     )
-    ```
-
-=== "Python API — in-memory"
-
-    ```python
-    from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
-
-    gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
-    svg: BadgeSVG = gen.render_badge(
-        left_text="build",
-        left_color="DARK_GREEN",
-        right_text="passing",
-        right_color="#44cc11",
-    )
-
-    # Use as a string, convert to bytes, or get a data URI
-    html = f'<img src="{svg.to_data_uri()}" alt="build">'
     ```
 
 === "CLI — single"
@@ -129,6 +112,7 @@ Typer-powered CLI with Rich progress bars, error panels, and a summary table aft
       --left-color "#555555" \
       --right-text "94%" \
       --right-color "#44cc11" \
+      --style gradient \
       --badge-name coverage.svg \
       --output-path ./badges
     ```
@@ -136,15 +120,22 @@ Typer-powered CLI with Rich progress bars, error panels, and a summary table aft
 === "CLI — batch"
 
     ```bash
-    badgeshield batch badges.json --output-path ./badges
+    badgeshield batch badges.json --output-path ./badges --style rounded
     ```
 
     `badges.json`:
     ```json
     [
       { "badge_name": "build.svg",    "left_text": "build",    "left_color": "GREEN" },
-      { "badge_name": "coverage.svg", "left_text": "coverage", "left_color": "#555", "right_text": "94%", "right_color": "#44cc11" }
+      { "badge_name": "coverage.svg", "left_text": "coverage", "left_color": "#555", "right_text": "94%", "right_color": "#44cc11", "style": "gradient" }
     ]
+    ```
+
+=== "CLI — audit"
+
+    ```bash
+    badgeshield audit build.svg        # exits 0 if clean
+    badgeshield audit build.svg --json # machine-readable JSON
     ```
 
 ---

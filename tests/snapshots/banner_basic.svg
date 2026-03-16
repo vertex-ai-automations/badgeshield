@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="72" height="28">
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="28" aria-label="badgeshield - v1.0" role="img">
+  <title>badgeshield - v1.0</title>
   <defs>
     <clipPath id="banner_clip">
       <rect width="72" height="28" rx="3" ry="3"/>

@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="109" height="20">
+<svg xmlns="http://www.w3.org/2000/svg" width="109" height="20" aria-label="build - passing" role="img">
+  <title>build - passing</title>
   <defs>
     <clipPath id="pill_clip">
       <rect width="109" height="20" rx="10" ry="10"/>

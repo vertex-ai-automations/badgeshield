@@ -1,12 +1,11 @@
 import base64
 import colorsys
-import os
 import re
 import threading
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 from pylogshield import LogLevel, get_logger
@@ -390,12 +389,12 @@ class BadgeGenerator:
         if output_path is not None:
             if output_path == "":
                 raise ValueError("output_path cannot be an empty string.")
-            output_path = os.path.abspath(output_path)
+            output_path = str(Path(output_path).resolve())
         else:
-            output_path = os.getcwd()
+            output_path = str(Path.cwd())
 
         # Ensure output path is a directory
-        if not os.path.isdir(output_path):
+        if not Path(output_path).is_dir():
             raise ValueError(f"Output path {output_path} is not a valid directory.")
 
         # Ensure badge_name is valid
@@ -404,13 +403,16 @@ class BadgeGenerator:
                 f"badge_name {badge_name} is not valid, must end with '.svg' (e.g., 'badge.svg')."
             )
 
-        # Prevent path traversal
+        # Prevent path traversal and absolute paths
         badge_path = Path(badge_name)
         if any(part in ("..", ".") for part in badge_path.parts[:-1]):
             raise ValueError(
                 f"badge_name '{badge_name}' must not contain directory traversal."
             )
-        if badge_path.is_absolute() or (len(badge_path.parts) > 1 and badge_path.parts[0] in ("\\", "/")):
+        # Use both Posix and Windows pure-path checks so the guard works
+        # regardless of which OS is running (e.g. "/tmp/x.svg" is absolute on
+        # Linux but not on Windows; "C:/x.svg" is the reverse).
+        if PurePosixPath(badge_name).is_absolute() or PureWindowsPath(badge_name).is_absolute():
             raise ValueError(
                 f"badge_name '{badge_name}' must be a plain filename, not an absolute path."
             )
@@ -644,8 +646,8 @@ class BadgeGenerator:
         logo_padding = 3 if logo else 0
         text_padding = 10
         left_width = left_text_width + text_padding + logo_width + logo_padding
-        right_width = right_text_width + text_padding if right_text else 0
-        total_width = left_width + right_width + (text_padding if right_text else 0)
+        right_width = (right_text_width if right_text else 0) + text_padding
+        total_width = left_width + right_width
         context = dict(
             left_text=left_text,
             right_text=right_text,
@@ -952,7 +954,7 @@ class BadgeGenerator:
             logo,
             frame,
         )
-        full_path = os.path.join(output_path, badge_name)
+        full_path = str(Path(output_path) / badge_name)
 
         try:
             badge_content = self._render_badge_content(

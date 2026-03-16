@@ -1,6 +1,6 @@
 {% set clip_circle_id = 'clipCircle' + id_suffix %}
 
-<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" aria-labelledby="title desc" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" aria-labelledby="title desc" role="img">
   <!-- Accessibility: Title and description -->
   <title id="title">{{ left_title if left_title else left_text }}</title>
   <desc id="desc">A badge with a circular shape, customizable gradient background, centered text, and an optional logo with a shadow effect.</desc>
@@ -41,7 +41,7 @@
 
   <!-- Optional transparent clickable area covering the circle -->
   {% if left_link %}
-    <a xlink:href="{{ left_link }}">
+    <a href="{{ left_link }}">
       <title>{{ left_title if left_title else left_text }}</title>
       <circle cx="50" cy="50" r="36" fill="rgba(0,0,0,0)" />
     </a>
