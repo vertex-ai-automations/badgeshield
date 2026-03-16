@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
@@ -259,6 +260,66 @@ def coverage(
         raise typer.Exit(1)
 
     typer.echo(f"Coverage badge generated: {pct:.1f}% ({metric} coverage)")
+
+
+@app.command()
+def audit(
+    svg_file: Path = typer.Argument(..., help="Path to SVG file to audit"),
+    json_output: bool = typer.Option(False, "--json", help="Output machine-readable JSON"),
+) -> None:
+    """Audit an SVG file for external resource references."""
+    try:
+        tree = ET.parse(svg_file)
+    except FileNotFoundError:
+        _error(f"File not found: {svg_file}")
+        raise typer.Exit(2)
+    except ET.ParseError as exc:
+        _error(f"XML parse error: {exc}")
+        raise typer.Exit(2)
+
+    root = tree.getroot()
+    tag = root.tag
+    if not (tag == "svg" or tag.endswith("}svg")):
+        _error(f"Root element is <{tag}>, not <svg>. Not an SVG file.")
+        raise typer.Exit(2)
+
+    violations = []
+    for elem in root.iter():
+        for attr_name, attr_value in elem.attrib.items():
+            if attr_name == "xmlns" or attr_name.startswith("xmlns:"):
+                continue  # XML namespace declarations are not external resource references
+            if attr_value.startswith("http://") or attr_value.startswith("https://"):
+                violations.append({
+                    "element": elem.tag,
+                    "attribute": attr_name,
+                    "url": attr_value,
+                })
+            if attr_name == "style":
+                for match in re.findall(
+                    r'url\(["\']?(https?://[^"\')\s]+)', attr_value
+                ):
+                    violations.append({
+                        "element": elem.tag,
+                        "attribute": "style[url]",
+                        "url": match,
+                    })
+
+    if json_output:
+        typer.echo(json.dumps({"clean": len(violations) == 0, "violations": violations}))
+    else:
+        if not violations:
+            rprint("[green]\u2713 Clean \u2014 no external resource references found.[/green]")
+        else:
+            table = Table(title="External URL Violations", show_lines=True)
+            table.add_column("Element", style="cyan")
+            table.add_column("Attribute", style="yellow")
+            table.add_column("URL", style="red", no_wrap=True)
+            for v in violations:
+                table.add_row(v["element"], v["attribute"], v["url"])
+            rprint(table)
+
+    if violations:
+        raise typer.Exit(1)
 
 
 def main() -> None:
