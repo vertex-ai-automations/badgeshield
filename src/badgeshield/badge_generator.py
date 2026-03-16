@@ -788,6 +788,45 @@ class BadgeGenerator:
         self._last_render_context = context
         return self._get_template(self.template_name).render(**context)
 
+    def _render_banner(
+        self,
+        left_text: str,
+        left_color: str,
+        right_text: Optional[str],
+        right_color: Optional[str],
+        logo: Optional[str],
+        frame: Optional[str],
+        left_link: Optional[str],
+        right_link: Optional[str],
+        id_suffix: str,
+        left_title: Optional[str],
+        right_title: Optional[str],
+        logo_tint: Optional[Union[str, "BadgeColor"]],
+        style: "BadgeStyle" = BadgeStyle.FLAT,
+    ) -> str:
+        style_ctx = self._style_context(style, left_color, id_suffix)
+
+        icon_zone_width = 28
+        padding = 10
+        right_w = (self._calculate_text_width(right_text) + padding * 2) if right_text else 60
+        total_w = icon_zone_width + right_w
+
+        context = {
+            "left_text": left_text,
+            "left_color": left_color,
+            "right_text": right_text,
+            "right_color": right_color or "#555555",
+            "icon_zone_width": icon_zone_width,
+            "right_section_width": right_w,
+            "total_width": total_w,
+            "left_link": left_link,
+            "right_link": right_link,
+            "id_suffix": id_suffix,
+            **style_ctx,
+        }
+        self._last_render_context = context
+        return self._get_template(self.template_name).render(**context)
+
     def _render_badge_content(
         self,
         left_text: str,
@@ -945,4 +984,5 @@ BadgeGenerator._RENDERERS = {
     BadgeTemplate.CIRCLE: BadgeGenerator._render_circle,
     BadgeTemplate.CIRCLE_FRAME: BadgeGenerator._render_circle_frame,
     BadgeTemplate.PILL: BadgeGenerator._render_pill,
+    BadgeTemplate.BANNER: BadgeGenerator._render_banner,
 }

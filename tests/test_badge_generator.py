@@ -440,6 +440,26 @@ _SVG_AUDIT_PARAMS = [
         dict(left_text="OK", left_color=BadgeColor.GREEN,
              frame=FrameType.FRAME1, logo=LOGO_PATH, badge_name="test.svg"),
     ),
+    (
+        BadgeTemplate.PILL,
+        dict(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="test.svg",
+        ),
+    ),
+    (
+        BadgeTemplate.BANNER,
+        dict(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="test.svg",
+        ),
+    ),
 ]
 
 def test_get_font_uses_bundled_font(monkeypatch):
@@ -472,7 +492,7 @@ def test_get_font_uses_bundled_font(monkeypatch):
 
 
 @pytest.mark.parametrize("template,kwargs", _SVG_AUDIT_PARAMS,
-                         ids=["DEFAULT", "CIRCLE", "CIRCLE_FRAME"])
+                         ids=["DEFAULT", "CIRCLE", "CIRCLE_FRAME", "PILL", "BANNER"])
 def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
     gen = BadgeGenerator(template=template)
     gen.generate_badge(output_path=str(tmp_path), **kwargs)
@@ -571,6 +591,41 @@ class TestBadgeStyleRendering:
         )
         actual = (tmp_path / "pill_basic.svg").read_text()
         snapshot_path = Path(__file__).parent / "snapshots" / "pill_basic.svg"
+        import os
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_path.write_text(actual)
+        if not snapshot_path.exists():
+            pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
+        assert actual == snapshot_path.read_text()
+
+    def test_banner_template_basic(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.BANNER)
+        gen.generate_badge(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="banner_basic.svg",
+            output_path=str(tmp_path),
+        )
+        svg = (tmp_path / "banner_basic.svg").read_text()
+        assert "<svg" in svg
+        # banner is taller than default (height=28)
+        assert 'height="28"' in svg
+
+    def test_banner_snapshot(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.BANNER)
+        gen.generate_badge(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="banner_basic.svg",
+            output_path=str(tmp_path),
+        )
+        actual = (tmp_path / "banner_basic.svg").read_text()
+        snapshot_path = Path(__file__).parent / "snapshots" / "banner_basic.svg"
         import os
         if os.environ.get("UPDATE_SNAPSHOTS"):
             snapshot_path.parent.mkdir(parents=True, exist_ok=True)
