@@ -286,8 +286,6 @@ def audit(
     violations = []
     for elem in root.iter():
         for attr_name, attr_value in elem.attrib.items():
-            if attr_name == "xmlns" or attr_name.startswith("xmlns:"):
-                continue  # XML namespace declarations are not external resource references
             if attr_value.startswith("http://") or attr_value.startswith("https://"):
                 violations.append({
                     "element": elem.tag,
