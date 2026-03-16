@@ -33,6 +33,7 @@ pip install -r requirements.txt
 ```bash
 badgeshield single --left_text "Build" --left_color GREEN --badge_name build_badge.svg
 badgeshield batch config.json --output_path ./badges/
+badgeshield coverage coverage.xml --badge_name coverage.svg --metric line
 ```
 
 Note: `badge_name` must always end with `.svg`.
@@ -45,7 +46,9 @@ Note: `badge_name` must always end with `.svg`.
   - `BadgeBatchGenerator`: Concurrent badge generation via `ThreadPoolExecutor`. Aggregates failures and raises `RuntimeError` with a summary if any badge fails.
   - `BadgeGenerator`: Core SVG generation. Uses Jinja2 to render templates. Text width is calculated using Pillow's `ImageFont` (DejaVuSans.ttf) with a character-width dict fallback. Logo images are base64-embedded and can be color-tinted by converting to RGBA and applying the tint while preserving alpha.
 
-- **`generate_badge_cli.py`**: argparse CLI with two subcommands (`single`, `batch`). Validation functions normalize color names to hex before passing to `BadgeGenerator`.
+- **`generate_badge_cli.py`**: Typer + Rich CLI with three subcommands: `single`, `batch`, and `coverage`. Enum validation (template, frame, log_level) is done at CLI entry before calling `BadgeGenerator`. The `batch` command shows a Rich progress bar and summary table; failures exit with code 1.
+
+- **`coverage.py`**: Two standalone functions — `parse_coverage_xml(path, metric)` reads `line-rate` or `branch-rate` from a `coverage.xml` produced by `coverage run`, returning a float 0–100; `coverage_color(pct)` maps the percentage to a hex color. The `coverage` CLI subcommand wires these together to produce a DEFAULT-template badge.
 
 - **`utils.py`**: Three enums — `BadgeColor` (51 colors), `FrameType` (11 PNG frames), `BadgeTemplate` (3 templates). These are the canonical type-safe inputs for the generator.
 
@@ -56,7 +59,7 @@ Note: `badge_name` must always end with `.svg`.
 
 ### Public API (`from badgeshield import ...`)
 
-`BadgeGenerator`, `BadgeBatchGenerator`, `BadgeColor`, `BadgeTemplate`, `FrameType`, `LogLevel`
+`BadgeGenerator`, `BadgeBatchGenerator`, `BadgeColor`, `BadgeTemplate`, `FrameType`, `LogLevel`, `parse_coverage_xml`, `coverage_color`
 
 ### Batch JSON config format
 
@@ -67,7 +70,7 @@ The JSON file passed to `batch` must be a list of objects, each with the same ke
 - **Versioning**: `setuptools_scm` derives version from git tags (format `X.X.X`). The `_version.py` file is auto-generated — do not edit it manually.
 - **Logging**: Uses `pylogshield` (`get_logger`), not stdlib `logging`. Log level can be passed as `LogLevel` enum or string.
 - **Color input**: Accepts either a `BadgeColor` enum member or a hex string (`#RRGGBB`). Validation is done via `is_valid_hex_color()` and `validate_color()` in `badge_generator.py`.
-- **Pillow is optional**: Only `jinja2` and `pylogshield` are required (`requirements.txt`). If Pillow is not installed, text width falls back to a char-width heuristic dict and logo tinting is silently skipped. Install Pillow separately for accurate text sizing: `pip install Pillow`.
+- **Pillow is optional**: Only `jinja2` and `pylogshield` are required (`requirements.txt`). If Pillow is not installed, text width falls back to a char-width heuristic dict and logo tinting is silently skipped. Install the extras group for accurate text sizing: `pip install badgeshield[image]`.
 - **CIRCLE_FRAME template**: Requires `frame` parameter (a `FrameType` enum); it is not optional for that template.
 
 ### CI/CD (`.github/workflows/release.yml`)

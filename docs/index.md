@@ -76,13 +76,20 @@ Generate hundreds of badges in parallel from a single JSON config using `BadgeBa
 Typer-powered CLI with Rich progress bars, error panels, and a summary table after batch runs.
 </div>
 
+<div class="feature-item" markdown>
+<span class="feature-icon">🧠</span>
+**In-Memory Rendering**
+
+`render_badge()` returns a `BadgeSVG` string — no file I/O. Convert to bytes, a data URI, or save later.
+</div>
+
 </div>
 
 ---
 
 ## Quick Look
 
-=== "Python API"
+=== "Python API — file"
 
     ```python
     from badgeshield import BadgeGenerator, BadgeTemplate
@@ -95,6 +102,23 @@ Typer-powered CLI with Rich progress bars, error panels, and a summary table aft
         right_color="#44cc11",
         badge_name="build.svg",
     )
+    ```
+
+=== "Python API — in-memory"
+
+    ```python
+    from badgeshield import BadgeGenerator, BadgeSVG, BadgeTemplate
+
+    gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+    svg: BadgeSVG = gen.render_badge(
+        left_text="build",
+        left_color="DARK_GREEN",
+        right_text="passing",
+        right_color="#44cc11",
+    )
+
+    # Use as a string, convert to bytes, or get a data URI
+    html = f'<img src="{svg.to_data_uri()}" alt="build">'
     ```
 
 === "CLI — single"

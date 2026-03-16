@@ -30,8 +30,6 @@ dynamic = ["version", "dependencies"]
 
 [project.optional-dependencies]
 image = ["Pillow>=9.0"]
-license = 'MIT'
-license-files = ['LICENSE']
 
 [project.urls]
 homepage = "https://www.vertexaiautomations.com"
