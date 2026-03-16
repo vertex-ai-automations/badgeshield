@@ -1,5 +1,8 @@
+import re
+
 import pytest
 
+from badgeshield import BadgeGenerator, BadgeTemplate
 from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
 from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
 
@@ -413,3 +416,38 @@ def test_logo_tinting_fallback_without_pillow(monkeypatch, output_dir):
     assert result is not None
     assert isinstance(result, str)
     assert len(result) > 0
+
+
+LOGO_PATH = "tests/fixtures/test_logo.png"
+
+_SVG_AUDIT_PARAMS = [
+    (
+        BadgeTemplate.DEFAULT,
+        dict(left_text="build", left_color=BadgeColor.GREEN,
+             right_text="passing", right_color=BadgeColor.BLUE,
+             logo=LOGO_PATH, left_link="#left", right_link="#right",
+             badge_name="test.svg"),
+    ),
+    (
+        BadgeTemplate.CIRCLE,
+        dict(left_text="OK", left_color=BadgeColor.GREEN,
+             logo=LOGO_PATH, left_link="#link", badge_name="test.svg"),
+    ),
+    (
+        BadgeTemplate.CIRCLE_FRAME,
+        dict(left_text="OK", left_color=BadgeColor.GREEN,
+             frame=FrameType.FRAME1, logo=LOGO_PATH, badge_name="test.svg"),
+    ),
+]
+
+@pytest.mark.parametrize("template,kwargs", _SVG_AUDIT_PARAMS,
+                         ids=["DEFAULT", "CIRCLE", "CIRCLE_FRAME"])
+def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
+    gen = BadgeGenerator(template=template)
+    gen.generate_badge(output_path=str(tmp_path), **kwargs)
+    svg_content = (tmp_path / "test.svg").read_text(encoding="utf-8")
+    # Strip standard SVG/XLink namespace declarations before scanning for
+    # external URLs — these are identifier strings, not network requests.
+    stripped = re.sub(r'xmlns(?::\w+)?="https?://[^"]*"', '', svg_content)
+    assert not re.search(r'https?://', stripped), \
+        f"Template {template} generated SVG with external URLs"
