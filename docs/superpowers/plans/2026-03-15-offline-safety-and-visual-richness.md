@@ -720,7 +720,7 @@
       SHADOWED = "shadowed"  # SVG feDropShadow filter
   ```
 
-  Also add `PILL` and `BANNER` to `BadgeTemplate`:
+  Also add `PILL` and `BANNER` to `BadgeTemplate`. **Note:** `BadgeTemplate` is already `class BadgeTemplate(Enum)` (plain Enum, not `str, Enum`) in the existing code — no base-class change needed, just add the two new members:
 
   ```python
   class BadgeTemplate(Enum):
@@ -1027,7 +1027,17 @@
 
 - [ ] **Step 7: Update `circle_frame.svg` to use shadow context variable**
 
-  Open `src/badgeshield/templates/circle_frame.svg`. Add shadow support in `<defs>` and apply to main circle.
+  Open `src/badgeshield/templates/circle_frame.svg`. In the `<defs>` block, add the same conditional filter as `circle.svg`:
+
+  ```svg
+  {% if shadow_id %}
+  <filter id="{{ shadow_id }}" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.4"/>
+  </filter>
+  {% endif %}
+  ```
+
+  Add `{% if shadow_id %}filter="url(#{{ shadow_id }})"{% endif %}` to the main `<circle>` element (the background circle, not the frame `<image>`).
 
 - [ ] **Step 8: Run style rendering tests — all must pass**
 
@@ -1083,6 +1093,35 @@
           "single", "--left_text", "x", "--left_color", "GREEN",
           "--badge_name", "out.svg", "--output_path", str(tmp_path),
           "--style", "NEON",
+      ])
+      assert result.exit_code == 1
+
+  def test_batch_per_entry_style_override(self, tmp_path):
+      """Batch JSON 'style' key per-entry overrides the CLI --style default."""
+      import json as _json
+      config = tmp_path / "badges.json"
+      config.write_text(_json.dumps([{
+          "left_text": "x", "left_color": "GREEN",
+          "badge_name": "out.svg", "style": "ROUNDED",
+      }]))
+      result = self.runner.invoke(app, [
+          "batch", str(config), "--output_path", str(tmp_path),
+          "--style", "FLAT",
+      ])
+      assert result.exit_code == 0
+      svg = (tmp_path / "out.svg").read_text()
+      assert 'rx="8"' in svg  # ROUNDED wins over FLAT default
+
+  def test_batch_per_entry_invalid_style(self, tmp_path):
+      """Batch JSON entry with invalid 'style' value exits 1 and reports error."""
+      import json as _json
+      config = tmp_path / "badges.json"
+      config.write_text(_json.dumps([{
+          "left_text": "x", "left_color": "GREEN",
+          "badge_name": "out.svg", "style": "NEON",
+      }]))
+      result = self.runner.invoke(app, [
+          "batch", str(config), "--output_path", str(tmp_path),
       ])
       assert result.exit_code == 1
   ```
@@ -1380,7 +1419,7 @@
       return self._get_template(self.template_name).render(**context)
   ```
 
-  At the bottom of the file, update `_RENDERERS`:
+  At the bottom of the file, update `_RENDERERS` — **add PILL only** (BANNER is added in Task 9 after `_render_banner` exists):
 
   ```python
   BadgeGenerator._RENDERERS = {
@@ -1388,11 +1427,8 @@
       BadgeTemplate.CIRCLE:       BadgeGenerator._render_circle,
       BadgeTemplate.CIRCLE_FRAME: BadgeGenerator._render_circle_frame,
       BadgeTemplate.PILL:         BadgeGenerator._render_pill,    # NEW
-      BadgeTemplate.BANNER:       BadgeGenerator._render_banner,  # (added in Task 9)
   }
   ```
-
-  Leave `BadgeTemplate.BANNER` registered to `_render_banner` as a forward reference — add it after Task 9 implements `_render_banner`. For now, only add PILL.
 
 - [ ] **Step 5: Run pill tests**
 
@@ -1528,7 +1564,6 @@
 
   ```svg
   {% set text_padding = 10 %}
-  {% set icon_zone_width = 28 if logo else 0 %}
   {% set effective_right_color = right_color if right_color else '#ffffff' %}
   {% set id_clip = 'clipBanner' + id_suffix %}
 
