@@ -6,6 +6,8 @@ import pytest
 from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
 from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
 
+pytestmark = pytest.mark.usefixtures("block_network")
+
 BADGE_NAME = "test_output.svg"
 
 

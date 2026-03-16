@@ -5,6 +5,8 @@ from typer.testing import CliRunner
 
 from badgeshield.generate_badge_cli import app
 
+pytestmark = pytest.mark.usefixtures("block_network")
+
 runner = CliRunner(mix_stderr=False)
 
 

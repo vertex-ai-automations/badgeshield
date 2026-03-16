@@ -18,6 +18,7 @@ def output_dir(tmp_path):
     return tmp_path
 
 
+# Network audit performed 2026-03-15: no dependency makes outbound calls.
 @pytest.fixture
 def block_network(monkeypatch):
     import socket
