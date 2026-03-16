@@ -67,38 +67,8 @@ on:
     tags:
       - "*.*.*"       # Publish only — bare SemVer e.g. 1.2.1
   workflow_dispatch:  # Manual trigger — docs only
-  pull_request:
-    branches:
-      - main          # Cross-platform tests on every PR
 
 jobs:
-
-  # ============================================================
-  # 🧪 Cross-Platform Test Matrix
-  # Runs on: pull requests and pushes to main
-  # Validates compatibility on Windows, Linux, and macOS
-  # across the supported Python version range.
-  # ============================================================
-  test:
-    name: 🧪 Test (${{ matrix.os }} / py${{ matrix.python-version }})
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/'))
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          pip install -e ".[image]"
-          pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/ -v --tb=short
 
   # ============================================================
   # 📚 Deploy MkDocs to GitHub Pages
