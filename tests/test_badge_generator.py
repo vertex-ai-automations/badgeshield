@@ -532,6 +532,7 @@ class TestBadgeStyleRendering:
         assert "<linearGradient" not in svg
         assert "<feDropShadow" not in svg
         assert 'rx="8"' not in svg
+        assert 'rx="3"' in svg
 
     def test_style_defaults_to_flat(self, tmp_path):
         """BadgeGenerator without explicit style behaves like FLAT."""

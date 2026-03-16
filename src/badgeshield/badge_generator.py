@@ -719,6 +719,10 @@ class BadgeGenerator:
         style: "BadgeStyle" = BadgeStyle.FLAT,
     ) -> str:
         style_ctx = self._style_context(style, left_color, id_suffix)
+        # circle_frame.svg supports shadow only — clear gradient keys
+        style_ctx["gradient_id"] = None
+        style_ctx["gradient_stop"] = None
+        style_ctx["gradient_base"] = None
         logo_data = self._load_logo_image(logo, logo_tint) if logo else None
         circle_radius = 35
         logo_width, logo_height = self._calculate_logo_size(circle_radius)
