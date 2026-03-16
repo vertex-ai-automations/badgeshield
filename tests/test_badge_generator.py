@@ -1,8 +1,8 @@
 import re
+from pathlib import Path
 
 import pytest
 
-from badgeshield import BadgeGenerator, BadgeTemplate
 from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
 from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
 
@@ -418,7 +418,7 @@ def test_logo_tinting_fallback_without_pillow(monkeypatch, output_dir):
     assert len(result) > 0
 
 
-LOGO_PATH = "tests/fixtures/test_logo.png"
+LOGO_PATH = str(Path(__file__).parent / "fixtures" / "test_logo.png")
 
 _SVG_AUDIT_PARAMS = [
     (

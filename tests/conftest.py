@@ -29,7 +29,7 @@ def block_network(monkeypatch):
 @pytest.fixture(scope="session", autouse=True)
 def test_logo_fixture():
     """Create tests/fixtures/test_logo.png if it doesn't exist."""
-    path = Path("tests/fixtures/test_logo.png")
+    path = Path(__file__).parent / "fixtures" / "test_logo.png"
     path.parent.mkdir(exist_ok=True)
     if not path.exists():
         def chunk(name, data):
