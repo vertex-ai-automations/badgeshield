@@ -140,6 +140,77 @@ class TestCLICommands:
         ])
         assert result.exit_code == 1
 
+    def test_single_style_rounded(self, tmp_path):
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text", "Build",
+                "--left-color", "GREEN",
+                "--badge-name", "style_test.svg",
+                "--output-path", str(tmp_path),
+                "--style", "rounded",
+            ],
+        )
+        assert result.exit_code == 0
+        svg = (tmp_path / "style_test.svg").read_text()
+        assert 'rx="8"' in svg
+
+    def test_single_style_invalid(self, tmp_path):
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text", "Build",
+                "--left-color", "GREEN",
+                "--badge-name", "style_test.svg",
+                "--output-path", str(tmp_path),
+                "--style", "neon",
+            ],
+        )
+        assert result.exit_code == 1
+
+    def test_batch_per_entry_style_override(self, tmp_path):
+        config = [
+            {
+                "left_text": "A",
+                "left_color": "#555555",
+                "badge_name": "a.svg",
+                "style": "rounded",
+            },
+            {
+                "left_text": "B",
+                "left_color": "#555555",
+                "badge_name": "b.svg",
+            },
+        ]
+        config_file = tmp_path / "badges.json"
+        config_file.write_text(json.dumps(config))
+        result = self.runner.invoke(
+            app,
+            ["batch", str(config_file), "--output-path", str(tmp_path)],
+        )
+        assert result.exit_code == 0
+        assert 'rx="8"' in (tmp_path / "a.svg").read_text()
+        assert 'rx="8"' not in (tmp_path / "b.svg").read_text()
+
+    def test_batch_per_entry_invalid_style(self, tmp_path):
+        config = [
+            {
+                "left_text": "A",
+                "left_color": "#555555",
+                "badge_name": "a.svg",
+                "style": "neon",
+            },
+        ]
+        config_file = tmp_path / "badges.json"
+        config_file.write_text(json.dumps(config))
+        result = self.runner.invoke(
+            app,
+            ["batch", str(config_file), "--output-path", str(tmp_path)],
+        )
+        assert result.exit_code == 1
+
 
 class TestAuditCommand:
     """audit subcommand tests — no block_network fixture (filesystem I/O only)."""

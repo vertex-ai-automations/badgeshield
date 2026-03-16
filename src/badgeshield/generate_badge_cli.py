@@ -15,7 +15,7 @@ from rich.table import Table
 from pylogshield import LogLevel
 
 from .badge_generator import BadgeBatchGenerator, BadgeGenerator
-from .utils import BadgeColor, BadgeTemplate, FrameType
+from .utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
 from .coverage import coverage_color, parse_coverage_xml
 
 app = typer.Typer(
@@ -60,6 +60,7 @@ def single(
     log_level: str = typer.Option(
         "INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"
     ),
+    style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
 ) -> None:
     """Generate a single SVG badge."""
     try:
@@ -68,6 +69,15 @@ def single(
         _error(
             f"Invalid log_level '{log_level}'. "
             f"Choose from: {', '.join(lv.name for lv in LogLevel)}"
+        )
+        raise typer.Exit(1)
+
+    try:
+        style_enum = BadgeStyle[style.upper()]
+    except KeyError:
+        _error(
+            f"Invalid style '{style}'. "
+            f"Choose from: {', '.join(s.name for s in BadgeStyle)}"
         )
         raise typer.Exit(1)
 
@@ -90,7 +100,7 @@ def single(
         raise typer.Exit(1)
 
     try:
-        generator = BadgeGenerator(template=template_enum, log_level=log_level_enum)
+        generator = BadgeGenerator(template=template_enum, log_level=log_level_enum, style=style_enum)
         generator.generate_badge(
             left_text=left_text,
             left_color=left_color,
@@ -125,6 +135,7 @@ def batch(
     template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME"),
     log_level: str = typer.Option("INFO"),
     max_workers: int = typer.Option(4, help="Parallel worker threads"),
+    style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
 ) -> None:
     """Batch-generate SVG badges from a JSON config file."""
     # --- Validate log_level ---
@@ -147,6 +158,16 @@ def batch(
         )
         raise typer.Exit(1)
 
+    # --- Validate style ---
+    try:
+        style_enum = BadgeStyle[style.upper()]
+    except KeyError:
+        _error(
+            f"Invalid style '{style}'. "
+            f"Choose from: {', '.join(s.name for s in BadgeStyle)}"
+        )
+        raise typer.Exit(1)
+
     # --- Parse config ---
     try:
         badge_configs = json.loads(config_file.read_text(encoding="utf-8"))
@@ -165,11 +186,24 @@ def batch(
             )
             raise typer.Exit(1)
 
-    # --- Inject CLI-level template and output_path ---
+    # --- Inject CLI-level template, output_path, and style ---
     for badge in badge_configs:
         badge["template"] = template_enum
         if output_path is not None:
             badge["output_path"] = output_path
+        # Per-entry style takes priority; inject CLI style only if not set
+        if "style" not in badge:
+            badge["style"] = style_enum
+        else:
+            # Validate per-entry style string
+            try:
+                badge["style"] = BadgeStyle[str(badge["style"]).upper()]
+            except KeyError:
+                _error(
+                    f"Invalid per-entry style '{badge['style']}'. "
+                    f"Choose from: {', '.join(s.name for s in BadgeStyle)}"
+                )
+                raise typer.Exit(1)
 
     # --- CIRCLE_FRAME requires 'frame' in every badge entry ---
     if template_enum == BadgeTemplate.CIRCLE_FRAME:

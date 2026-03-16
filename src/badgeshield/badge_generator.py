@@ -119,6 +119,7 @@ class BadgeBatchGenerator:
         left_title: Optional[str] = None,
         right_title: Optional[str] = None,
         logo_tint: Optional[Union[str, BadgeColor]] = None,
+        style: Optional["BadgeStyle"] = None,
     ) -> None:
         """Wrapper to generate a single badge using :class:`BadgeGenerator`.
 
@@ -126,7 +127,7 @@ class BadgeBatchGenerator:
         Any exception raised during badge creation is propagated to the caller so that
         batch execution can report the failure.
         """
-        generator = BadgeGenerator(template=template, log_level=self.log_level)
+        generator = BadgeGenerator(template=template, log_level=self.log_level, style=style)
         generator.generate_badge(
             left_text=left_text,
             left_color=left_color,
