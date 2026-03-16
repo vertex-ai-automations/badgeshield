@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ total_width }}" height="28">
+  <defs>
+    {% if gradient_id %}
+    <linearGradient id="{{ gradient_id }}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="{{ gradient_stop }}" stop-opacity="1"/>
+      <stop offset="1" stop-color="{{ gradient_base }}" stop-opacity="1"/>
+    </linearGradient>
+    {% endif %}
+    {% if shadow_id %}
+    <filter id="{{ shadow_id }}" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity="0.35"/>
+    </filter>
+    {% endif %}
+    <clipPath id="banner_clip{{ id_suffix }}">
+      <rect width="{{ total_width }}" height="28" rx="{{ rx }}" ry="{{ rx }}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#banner_clip{{ id_suffix }})"{% if shadow_id %} filter="url(#{{ shadow_id }})"{% endif %}>
+    <rect width="{{ icon_zone_width }}" height="28"
+          fill="{% if gradient_id %}url(#{{ gradient_id }}){% else %}{{ left_color }}{% endif %}"/>
+    <rect x="{{ icon_zone_width }}" width="{{ right_section_width }}" height="28" fill="{{ right_color }}"/>
+  </g>
+  {% if left_link %}<a href="{{ left_link }}">{% endif %}
+  <text x="{{ icon_zone_width // 2 }}" y="19" font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+        font-size="13" fill="#fff" fill-opacity=".9" text-anchor="middle">{{ left_text[0] | upper }}</text>
+  {% if left_link %}</a>{% endif %}
+  {% if right_text %}
+  {% if right_link %}<a href="{{ right_link }}">{% endif %}
+  <text x="{{ icon_zone_width + right_section_width // 2 }}" y="19"
+        font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+        font-size="11" fill="#fff" fill-opacity=".9" text-anchor="middle">{{ right_text }}</text>
+  {% if right_link %}</a>{% endif %}
+  {% endif %}
+</svg>

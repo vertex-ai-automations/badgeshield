@@ -1,7 +1,12 @@
+import re
+from pathlib import Path
+
 import pytest
 
 from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
-from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
+from badgeshield.utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
+
+pytestmark = pytest.mark.usefixtures("block_network")
 
 BADGE_NAME = "test_output.svg"
 
@@ -413,3 +418,247 @@ def test_logo_tinting_fallback_without_pillow(monkeypatch, output_dir):
     assert result is not None
     assert isinstance(result, str)
     assert len(result) > 0
+
+
+LOGO_PATH = str(Path(__file__).parent / "fixtures" / "test_logo.png")
+
+_SVG_AUDIT_PARAMS = [
+    (
+        BadgeTemplate.DEFAULT,
+        dict(left_text="build", left_color=BadgeColor.GREEN,
+             right_text="passing", right_color=BadgeColor.BLUE,
+             logo=LOGO_PATH, left_link="#left", right_link="#right",
+             badge_name="test.svg"),
+    ),
+    (
+        BadgeTemplate.CIRCLE,
+        dict(left_text="OK", left_color=BadgeColor.GREEN,
+             logo=LOGO_PATH, left_link="#link", badge_name="test.svg"),
+    ),
+    (
+        BadgeTemplate.CIRCLE_FRAME,
+        dict(left_text="OK", left_color=BadgeColor.GREEN,
+             frame=FrameType.FRAME1, logo=LOGO_PATH, badge_name="test.svg"),
+    ),
+    (
+        BadgeTemplate.PILL,
+        dict(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="test.svg",
+        ),
+    ),
+    (
+        BadgeTemplate.BANNER,
+        dict(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="test.svg",
+        ),
+    ),
+]
+
+def test_get_font_uses_bundled_font(monkeypatch):
+    """_get_font() must return the bundled DejaVuSans, not fall back to the default bitmap font."""
+    from badgeshield.badge_generator import BadgeGenerator, ImageFont
+    if ImageFont is None:
+        pytest.skip("Pillow not installed")
+
+    original_truetype = ImageFont.truetype
+
+    def patched_truetype(path, size):
+        import os
+        # Allow only the bundled path; block all system paths
+        if "badgeshield" in path and "fonts" in path:
+            return original_truetype(path, size)
+        raise OSError(f"Blocked system font path: {path}")
+
+    monkeypatch.setattr(ImageFont, "truetype", patched_truetype)
+
+    gen = BadgeGenerator()
+    # Clear cached font to force a fresh load
+    if hasattr(gen, "_badge_font"):
+        del gen._badge_font
+
+    font = gen._get_font()
+    assert font is not None
+    default_font = ImageFont.load_default()
+    assert type(font) != type(default_font), \
+        "_get_font() returned the fallback bitmap font instead of the bundled TrueType font"
+
+
+@pytest.mark.parametrize("template,kwargs", _SVG_AUDIT_PARAMS,
+                         ids=["DEFAULT", "CIRCLE", "CIRCLE_FRAME", "PILL", "BANNER"])
+def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
+    gen = BadgeGenerator(template=template)
+    gen.generate_badge(output_path=str(tmp_path), **kwargs)
+    svg_content = (tmp_path / "test.svg").read_text(encoding="utf-8")
+    # Strip standard SVG/XLink namespace declarations before scanning for
+    # external URLs — these are identifier strings, not network requests.
+    stripped = re.sub(r'xmlns(?::\w+)?="https?://[^"]*"', '', svg_content)
+    assert not re.search(r'https?://', stripped), \
+        f"Template {template} generated SVG with external URLs"
+
+
+class TestBadgeStyle:
+    def test_badge_style_values_exist(self):
+        assert BadgeStyle.FLAT.value == "flat"
+        assert BadgeStyle.ROUNDED.value == "rounded"
+        assert BadgeStyle.GRADIENT.value == "gradient"
+        assert BadgeStyle.SHADOWED.value == "shadowed"
+
+    def test_badge_style_exported_from_package(self):
+        import badgeshield
+        assert hasattr(badgeshield, "BadgeStyle")
+
+    def test_pill_and_banner_in_badge_template(self):
+        assert BadgeTemplate.PILL.value == "templates/pill.svg"
+        assert BadgeTemplate.BANNER.value == "templates/banner.svg"
+
+
+class TestBadgeStyleRendering:
+    """Tests for ROUNDED, GRADIENT, SHADOWED style presets on existing templates."""
+
+    def _generate_svg(self, template, style, tmp_path, **extra):
+        gen = BadgeGenerator(template=template, style=style)
+        gen.generate_badge(
+            left_text="build", left_color=BadgeColor.GREEN,
+            badge_name="test.svg", output_path=str(tmp_path), **extra
+        )
+        return (tmp_path / "test.svg").read_text(encoding="utf-8")
+
+    def test_rounded_label_has_rx8(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.ROUNDED, tmp_path)
+        assert 'rx="8"' in svg
+
+    def test_gradient_label_has_linear_gradient(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.GRADIENT, tmp_path)
+        assert "<linearGradient" in svg
+
+    def test_gradient_circle_has_radial_gradient(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.CIRCLE, BadgeStyle.GRADIENT, tmp_path)
+        assert "<radialGradient" in svg
+
+    def test_shadowed_label_has_drop_shadow(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.SHADOWED, tmp_path)
+        assert "<feDropShadow" in svg
+
+    def test_flat_style_no_gradient_no_shadow(self, tmp_path):
+        svg = self._generate_svg(BadgeTemplate.DEFAULT, BadgeStyle.FLAT, tmp_path)
+        assert "<linearGradient" not in svg
+        assert "<feDropShadow" not in svg
+        assert 'rx="8"' not in svg
+        assert 'rx="3"' in svg
+
+    def test_style_defaults_to_flat(self, tmp_path):
+        """BadgeGenerator without explicit style behaves like FLAT."""
+        gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
+        gen.generate_badge(
+            left_text="x", left_color=BadgeColor.GREEN,
+            badge_name="test.svg", output_path=str(tmp_path)
+        )
+        svg = (tmp_path / "test.svg").read_text(encoding="utf-8")
+        assert "<linearGradient" not in svg
+        assert "<feDropShadow" not in svg
+
+
+    def test_pill_template_basic(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.PILL)
+        gen.generate_badge(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="pill_basic.svg",
+            output_path=str(tmp_path),
+        )
+        svg = (tmp_path / "pill_basic.svg").read_text()
+        assert 'rx="10"' in svg  # pill always has rx=10
+
+    def test_pill_snapshot(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.PILL)
+        gen.generate_badge(
+            left_text="build",
+            left_color="#555555",
+            right_text="passing",
+            right_color="#44cc11",
+            badge_name="pill_basic.svg",
+            output_path=str(tmp_path),
+        )
+        actual = (tmp_path / "pill_basic.svg").read_text()
+        snapshot_path = Path(__file__).parent / "snapshots" / "pill_basic.svg"
+        import os
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_path.write_text(actual)
+        if not snapshot_path.exists():
+            pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
+        assert actual == snapshot_path.read_text()
+
+    def test_banner_template_basic(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.BANNER)
+        gen.generate_badge(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="banner_basic.svg",
+            output_path=str(tmp_path),
+        )
+        svg = (tmp_path / "banner_basic.svg").read_text()
+        assert "<svg" in svg
+        # banner is taller than default (height=28)
+        assert 'height="28"' in svg
+
+    def test_banner_snapshot(self, tmp_path):
+        gen = BadgeGenerator(template=BadgeTemplate.BANNER)
+        gen.generate_badge(
+            left_text="badgeshield",
+            left_color="#1a1a2e",
+            right_text="v1.0",
+            right_color="#16213e",
+            badge_name="banner_basic.svg",
+            output_path=str(tmp_path),
+        )
+        actual = (tmp_path / "banner_basic.svg").read_text()
+        snapshot_path = Path(__file__).parent / "snapshots" / "banner_basic.svg"
+        import os
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot_path.write_text(actual)
+        if not snapshot_path.exists():
+            pytest.fail(f"Snapshot missing: {snapshot_path}. Run with UPDATE_SNAPSHOTS=1 to create.")
+        assert actual == snapshot_path.read_text()
+
+
+class TestLightenHex:
+    def test_black_lightens(self):
+        from badgeshield.badge_generator import _lighten_hex
+        assert _lighten_hex("#000000") == "#333333"
+
+    def test_white_unchanged(self):
+        from badgeshield.badge_generator import _lighten_hex
+        assert _lighten_hex("#ffffff") == "#FFFFFF"
+
+    def test_mid_tone(self):
+        from badgeshield.badge_generator import _lighten_hex
+        # Run once with UPDATE_SNAPSHOTS=1 to establish canonical value
+        import os
+        result = _lighten_hex("#4c1d95")
+        if os.environ.get("UPDATE_SNAPSHOTS"):
+            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
+            os.makedirs("tests/snapshots", exist_ok=True)
+            open(snapshot_path, "w").write(result)
+        else:
+            snapshot_path = "tests/snapshots/_lighten_hex_4c1d95.txt"
+            if not os.path.exists(snapshot_path):
+                pytest.fail(
+                    f"Snapshot missing: {snapshot_path}. "
+                    "Run UPDATE_SNAPSHOTS=1 pytest to generate it."
+                )
+            expected = open(snapshot_path).read().strip()
+            assert result == expected
