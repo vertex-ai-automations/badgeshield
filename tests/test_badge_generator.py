@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from badgeshield.badge_generator import BadgeBatchGenerator, BadgeGenerator
-from badgeshield.utils import BadgeColor, BadgeTemplate, FrameType
+from badgeshield.utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
 
 pytestmark = pytest.mark.usefixtures("block_network")
 
@@ -482,9 +482,6 @@ def test_generated_svg_has_no_external_urls(template, kwargs, tmp_path):
     stripped = re.sub(r'xmlns(?::\w+)?="https?://[^"]*"', '', svg_content)
     assert not re.search(r'https?://', stripped), \
         f"Template {template} generated SVG with external URLs"
-
-
-from badgeshield.utils import BadgeStyle
 
 
 class TestBadgeStyle:

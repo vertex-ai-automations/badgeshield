@@ -8,7 +8,7 @@ __all__ = [
     "BadgeBatchGenerator",
     "BadgeColor",
     "BadgeTemplate",
-    "BadgeStyle",       # NEW
+    "BadgeStyle",
     "FrameType",
     "LogLevel",
     "__version__",

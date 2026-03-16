@@ -92,8 +92,8 @@ class BadgeTemplate(Enum):
     DEFAULT      = "templates/label.svg"
     CIRCLE_FRAME = "templates/circle_frame.svg"
     CIRCLE       = "templates/circle.svg"
-    PILL         = "templates/pill.svg"    # NEW
-    BANNER       = "templates/banner.svg"  # NEW
+    PILL         = "templates/pill.svg"
+    BANNER       = "templates/banner.svg"
 
     def __str__(self) -> str:
         return self.value
