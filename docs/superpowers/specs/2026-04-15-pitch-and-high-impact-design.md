@@ -229,7 +229,7 @@ badgeshield preset --all --output_path ./badges/ --format markdown
 **`--all` resolution policy:**
 - Cosmetic (fixed) presets are always included.
 - Data-wired presets are included only if their source returns a value other than `"unknown"` / `"untagged"`. Presets requiring an explicit path argument (`--junit`, `--coverage_xml`) are skipped when those flags are not provided.
-- Skipped presets are listed in a Rich summary table after generation.
+- Skipped presets are listed in a Rich summary table after generation. Only written badges produce a `--format` snippet — skipped presets produce no output line.
 - If zero badges are written, exit with code 1 and print a diagnostic.
 
 ### 5.2 New `presets` subcommand
