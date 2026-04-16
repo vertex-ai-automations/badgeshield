@@ -48,24 +48,25 @@ def _regex_in_file(path: Path, pattern: str) -> str:
 
 
 def _run_git(args: list, cwd: Path) -> str:
-    """
-    Run a git command in *cwd*, return stripped stdout.
-
-    Returns '' on non-zero exit.
-    Raises RuntimeError if git is not installed / not on PATH.
-    """
+    """Run a git command; return stripped stdout, "" on failure, raise RuntimeError if git not on PATH."""
     try:
         result = subprocess.run(
-            ["git"] + list(args),
+            ["git"] + args,
             cwd=str(cwd),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode != 0:
             return ""
-        return result.stdout.decode("utf-8", errors="replace").strip()
+        return result.stdout.strip()
     except FileNotFoundError:
-        raise RuntimeError("git is not installed or not on PATH")
+        raise RuntimeError(
+            "git is not installed or not on PATH. "
+            "Install git to use git-based badge sources."
+        )
+    except subprocess.TimeoutExpired:
+        return ""
 
 
 # ---------------------------------------------------------------------------

@@ -28,13 +28,18 @@ def test_get_version_from_version_py(tmp_path):
 
 def test_get_version_from_git_tag(tmp_path):
     """Step 4: git tag fallback when no file-based sources exist."""
+    import shutil
     import subprocess as _sp
-    _sp.run(["git", "init"], cwd=str(tmp_path), capture_output=True)
+    if not shutil.which("git"):
+        pytest.skip("git not available")
+    r = _sp.run(["git", "init"], cwd=str(tmp_path), capture_output=True)
     _sp.run(["git", "config", "user.email", "t@t.com"], cwd=str(tmp_path), capture_output=True)
     _sp.run(["git", "config", "user.name", "T"], cwd=str(tmp_path), capture_output=True)
     (tmp_path / "f.txt").write_text("hi", encoding="utf-8")
     _sp.run(["git", "add", "."], cwd=str(tmp_path), capture_output=True)
-    _sp.run(["git", "commit", "-m", "init"], cwd=str(tmp_path), capture_output=True)
+    commit_result = _sp.run(["git", "commit", "-m", "init"], cwd=str(tmp_path), capture_output=True)
+    if commit_result.returncode != 0:
+        pytest.skip("git commit failed — check git config")
     _sp.run(["git", "tag", "4.5.6"], cwd=str(tmp_path), capture_output=True)
     assert get_version(tmp_path) == "4.5.6"
 
