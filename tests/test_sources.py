@@ -266,3 +266,11 @@ def test_get_coverage_missing_file(tmp_path):
     from badgeshield.sources import get_coverage
     with pytest.raises(FileNotFoundError):
         get_coverage(tmp_path / "missing.xml")
+
+def test_get_coverage_invalid_xml_raises_value_error(tmp_path):
+    """get_coverage raises ValueError when line-rate attribute is absent."""
+    from badgeshield.sources import get_coverage
+    f = tmp_path / "coverage.xml"
+    f.write_text('<coverage version="7.0"></coverage>', encoding="utf-8")
+    with pytest.raises(ValueError):
+        get_coverage(f)
