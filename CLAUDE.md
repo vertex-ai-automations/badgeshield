@@ -15,6 +15,8 @@ pytest tests/ -v --tb=short
 pytest tests/test_badge_generator.py -v
 # Run a single test
 pytest tests/test_badge_generator.py::test_name -v
+# Regenerate snapshot files (pill_basic.svg, banner_basic.svg, _lighten_hex_*.txt)
+UPDATE_SNAPSHOTS=1 pytest tests/ -v
 ```
 
 ### Documentation

@@ -253,7 +253,12 @@ class BadgeGenerator:
         Returns
         -------
         Template:
-            A compiled Jinja2 template ready for rendering, or ``None`` if the template cannot be located.
+            A compiled Jinja2 template ready for rendering.
+
+        Raises
+        ------
+        RuntimeError:
+            If the template file cannot be located in the package.
         """
         try:
             with BadgeGenerator._cache_lock:
@@ -442,12 +447,19 @@ class BadgeGenerator:
 
         return str((Path.cwd() / path_obj).resolve())
 
+    _MAX_LOGO_BYTES: ClassVar[int] = 10 * 1024 * 1024  # 10 MB
+
     def get_base64_content(self, bin_file: str) -> str:
         """Get the base64 encoded content of a binary file."""
         bin_path = Path(bin_file)
         if not bin_path.is_absolute():
             bin_path = Path(self.local_path(bin_file))
         try:
+            file_size = bin_path.stat().st_size
+            if file_size > self._MAX_LOGO_BYTES:
+                raise ValueError(
+                    f"Logo file too large ({file_size} bytes); limit is {self._MAX_LOGO_BYTES} bytes: {bin_path}"
+                )
             with bin_path.open(
                 "rb", buffering=16 * 1024
             ) as f:  # Use a larger buffer for efficient file I/O
@@ -513,7 +525,7 @@ class BadgeGenerator:
 
         try:
             ascent, descent = font.getmetrics()
-        except Exception:
+        except (AttributeError, TypeError):
             ascent = descent = 0
 
         metrics_height = ascent + descent
@@ -527,7 +539,7 @@ class BadgeGenerator:
 
         try:
             bbox_sample = font.getbbox("Hg")
-        except Exception:
+        except (AttributeError, TypeError):
             return None
 
         height = bbox_sample[3] - bbox_sample[1]

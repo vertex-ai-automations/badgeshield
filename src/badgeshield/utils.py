@@ -39,7 +39,7 @@ class BadgeColor(Enum):
     DARK_PURPLE = "#4B0082"
     DARK_PINK = "#FF1493"
     DARK_BROWN = "#654321"
-    DARK_GRAY = "#A9A9A9"
+    DARK_GRAY = "#696969"
     DARK_CYAN = "#008B8B"
     DARK_MAGENTA = "#8B008B"
 
