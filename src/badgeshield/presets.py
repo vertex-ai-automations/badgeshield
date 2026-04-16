@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path  # kept for get_type_hints() resolution of Callable[[Path], str]
 from typing import Callable, Optional, Union
 
 from .utils import BadgeColor
@@ -15,12 +15,17 @@ from .sources import (
 
 @dataclass
 class Preset:
-    """Configuration for a named badge preset."""
+    """Configuration for a named badge preset.
+
+    ``source`` is a callable ``(search_path: Path) -> str`` for data-wired presets.
+    When ``source=None``, the CLI supplies a lambda at dispatch time (e.g., for
+    ``tests`` and ``coverage`` which require an explicit file path argument).
+    """
     label: str
     color: Union[BadgeColor, str]
     source: Optional[Callable[[Path], str]] = None
     right_text: Optional[str] = None
-    right_color: str = "#555555"
+    right_color: str = "#555555"  # right panel color; maps to BadgeGenerator right_color kwarg
     description: str = ""
 
 

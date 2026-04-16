@@ -50,12 +50,17 @@ def test_data_wired_presets_have_source():
 
 
 def test_preset_registry_size():
-    assert len(PRESETS) >= 36
+    assert len(PRESETS) == 36
 
 
 def test_preset_source_callable_protocol(tmp_path):
-    """Data-wired presets (excluding tests/coverage/lines) accept search_path."""
-    search_only = ["version", "license", "python", "branch", "tag", "commits", "repo-status"]
+    """Verify that data-wired source callables conform to the (Path) -> str protocol.
+
+    Each source is called against an empty tmp_path (no project files, no git repo).
+    Results will be 'unknown'/'untagged' — we are testing the callable interface,
+    not the extraction logic (which is covered by test_sources.py).
+    """
+    search_only = ["version", "license", "python", "branch", "tag", "commits", "repo-status", "lines"]
     for name in search_only:
         preset = PRESETS[name]
         result = preset.source(tmp_path)
