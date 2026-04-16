@@ -53,6 +53,17 @@ def test_preset_registry_size():
     assert len(PRESETS) == 36
 
 
+def test_public_api_exports():
+    from badgeshield import (
+        get_version, get_license, get_python_requires,
+        get_git_branch, get_git_tag, get_git_commit_count, get_git_status,
+        get_lines_of_code, get_test_results, get_coverage,
+        PRESETS, Preset,
+    )
+    assert callable(get_version)
+    assert isinstance(PRESETS, dict)
+
+
 def test_preset_source_callable_protocol(tmp_path):
     """Verify that data-wired source callables conform to the (Path) -> str protocol.
 
