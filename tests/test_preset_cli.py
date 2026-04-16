@@ -240,3 +240,52 @@ def test_preset_all_format_markdown(tmp_path):
     ])
     assert result.exit_code == 0
     assert "![" in result.output
+
+
+def test_preset_all_with_junit(tmp_path):
+    """tests preset is written when --junit is provided to --all."""
+    junit = tmp_path / "junit.xml"
+    junit.write_text(
+        '<?xml version="1.0"?><testsuite tests="3" failures="0"></testsuite>',
+        encoding="utf-8",
+    )
+    result = runner.invoke(app, [
+        "preset", "--all",
+        "--junit", str(junit),
+        "--output_path", str(tmp_path),
+    ])
+    assert result.exit_code == 0
+    assert (tmp_path / "tests.svg").exists()
+
+
+# ---------------------------------------------------------------------------
+# batch --format and coverage --format integration tests
+# ---------------------------------------------------------------------------
+
+def test_batch_with_format_markdown(tmp_path):
+    config = [{"left_text": "build", "left_color": "GREEN", "badge_name": "build.svg"}]
+    config_file = tmp_path / "badges.json"
+    config_file.write_text(json.dumps(config), encoding="utf-8")
+    result = runner.invoke(app, [
+        "batch", str(config_file),
+        "--output-path", str(tmp_path),
+        "--format", "markdown",
+    ])
+    assert result.exit_code == 0
+    assert "![build](" in result.output
+
+
+def test_coverage_with_format_html(tmp_path):
+    coverage_xml = tmp_path / "coverage.xml"
+    coverage_xml.write_text(
+        '<?xml version="1.0"?><coverage line-rate="0.90" branch-rate="0.80" version="7.0"></coverage>',
+        encoding="utf-8",
+    )
+    result = runner.invoke(app, [
+        "coverage", str(coverage_xml),
+        "--badge-name", "cov.svg",
+        "--output-path", str(tmp_path),
+        "--format", "html",
+    ])
+    assert result.exit_code == 0
+    assert '<img src=' in result.output

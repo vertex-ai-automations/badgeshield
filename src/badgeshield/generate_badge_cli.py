@@ -459,6 +459,9 @@ def _run_all_presets(
                 except Exception as exc:
                     skipped.append((name, str(exc)))
                     continue
+                if right_text in _SKIP_VALUES:
+                    skipped.append((name, f"resolved to '{right_text}'"))
+                    continue
             elif p.source is not None:
                 try:
                     right_text = p.source(sp)
