@@ -22,7 +22,11 @@ from .sources import get_test_results, get_coverage, get_lines_of_code
 
 app = typer.Typer(
     name="badgeshield",
-    help="Generate customizable SVG badges.",
+    help=(
+        "Generate customizable SVG badges — entirely offline, no network calls.\n\n"
+        "Quick start: run 'badgeshield presets' to list all named presets, then\n"
+        "'badgeshield preset --all --output_path ./badges/' to generate them all."
+    ),
     add_completion=False,
 )
 
@@ -53,29 +57,29 @@ def single(
     badge_name: str = typer.Option(
         ..., "--badge_name", help="Output filename, must end with .svg"
     ),
-    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME"),
+    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"),
     output_path: Optional[str] = typer.Option(
         None, "--output_path", help="Output directory; defaults to current directory"
     ),
-    right_text: Optional[str] = typer.Option(None),
-    right_color: Optional[str] = typer.Option(None),
-    logo: Optional[str] = typer.Option(None, help="Path to a logo image"),
+    right_text: Optional[str] = typer.Option(None, help="Text for the right section (omit for label-only badge)"),
+    right_color: Optional[str] = typer.Option(None, help="Hex (#RRGGBB) or BadgeColor name for right section"),
+    logo: Optional[str] = typer.Option(None, help="Path to a logo image (embedded as base64)"),
     logo_tint: Optional[str] = typer.Option(
         None, help="Hex or BadgeColor name to tint the logo"
     ),
     frame: Optional[str] = typer.Option(
-        None, help="Frame type — required for CIRCLE_FRAME template"
+        None, help="Frame type (FRAME1–FRAME11) — required for CIRCLE_FRAME template"
     ),
-    left_link: Optional[str] = typer.Option(None),
-    right_link: Optional[str] = typer.Option(None),
-    id_suffix: str = typer.Option(""),
-    left_title: Optional[str] = typer.Option(None),
-    right_title: Optional[str] = typer.Option(None),
+    left_link: Optional[str] = typer.Option(None, help="Hyperlink URL for the left section"),
+    right_link: Optional[str] = typer.Option(None, help="Hyperlink URL for the right section"),
+    id_suffix: str = typer.Option("", help="Suffix appended to SVG element IDs (useful when embedding multiple badges)"),
+    left_title: Optional[str] = typer.Option(None, help="SVG title tooltip for the left section"),
+    right_title: Optional[str] = typer.Option(None, help="SVG title tooltip for the right section"),
     log_level: str = typer.Option(
         "INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"
     ),
     style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
-    format: Optional[str] = typer.Option(None, "--format", help="Embed snippet format: markdown | rst | html"),
+    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"),
 ) -> None:
     """Generate a single SVG badge."""
     try:
@@ -155,13 +159,18 @@ def batch(
     output_path: Optional[str] = typer.Option(
         None, help="Output directory; defaults to current directory"
     ),
-    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME"),
-    log_level: str = typer.Option("INFO"),
+    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"),
+    log_level: str = typer.Option("INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"),
     max_workers: int = typer.Option(4, help="Parallel worker threads"),
-    style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
-    format: Optional[str] = typer.Option(None, "--format", help="Embed snippet format: markdown | rst | html"),
+    style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED (per-entry 'style' key overrides this)"),
+    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet per badge to stdout: markdown | rst | html"),
 ) -> None:
-    """Batch-generate SVG badges from a JSON config file."""
+    """Batch-generate SVG badges from a JSON config file.
+
+    CONFIG_FILE must be a JSON array of badge objects. Required keys per entry:
+    left_text, left_color, badge_name (must end with .svg). Optional keys:
+    right_text, right_color, logo, style, and any other BadgeGenerator kwarg.
+    """
     # --- Validate log_level ---
     try:
         log_level_enum = LogLevel[log_level.upper()]
@@ -513,17 +522,22 @@ def _run_all_presets(
 @app.command(name="preset")
 def preset_cmd(
     name: Optional[str] = typer.Argument(None, help="Preset name (see 'badgeshield presets')"),
-    badge_name: Optional[str] = typer.Option(None, "--badge_name", help="Output filename (defaults to {name}.svg)"),
+    badge_name: Optional[str] = typer.Option(None, "--badge_name", help="Output filename (default: <preset-name>.svg)"),
     output_path: Optional[str] = typer.Option(None, "--output_path", help="Output directory (default: current directory)"),
-    search_path: str = typer.Option(".", "--search_path", help="Repo root for source resolution"),
+    search_path: str = typer.Option(".", "--search_path", help="Repo root used to resolve data-wired preset values"),
     style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
-    format: Optional[str] = typer.Option(None, "--format", help="markdown | rst | html"),
-    extensions: Optional[List[str]] = typer.Option(None, help="File extensions for lines preset (repeatable)"),
-    junit: Optional[Path] = typer.Option(None, "--junit", help="Path to JUnit XML for tests preset"),
-    coverage_xml: Optional[Path] = typer.Option(None, "--coverage_xml", help="Path to coverage.xml for coverage preset"),
-    all_presets: bool = typer.Option(False, "--all", help="Generate all resolvable presets"),
+    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"),
+    extensions: Optional[List[str]] = typer.Option(None, help="File extensions for 'lines' preset, repeatable (default: .py)"),
+    junit: Optional[Path] = typer.Option(None, "--junit", help="JUnit XML path required by the 'tests' preset"),
+    coverage_xml: Optional[Path] = typer.Option(None, "--coverage_xml", help="coverage.xml path required by the 'coverage' preset"),
+    all_presets: bool = typer.Option(False, "--all", help="Generate all resolvable presets; skips data-wired presets that return 'unknown'"),
 ) -> None:
-    """Generate a badge from a named preset."""
+    """Generate a badge from a named preset (see 'badgeshield presets' for the full list).
+
+    Data-wired presets read values from your local repo (pyproject.toml, git,
+    source files) with no network calls. Use --all to generate every resolvable
+    preset in one command.
+    """
     if all_presets:
         _run_all_presets(output_path, search_path, style, format, extensions, junit, coverage_xml)
         return
