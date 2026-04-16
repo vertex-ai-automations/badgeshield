@@ -188,3 +188,58 @@ def get_python_requires(search_path: Path = Path(".")) -> str:
             return value
 
     return "unknown"
+
+
+def get_git_branch(search_path: Path = Path(".")) -> str:
+    """Return the current git branch name, or 'unknown' on failure."""
+    search_path = Path(search_path)
+    try:
+        v = _run_git(["rev-parse", "--abbrev-ref", "HEAD"], search_path)
+        return v if v else "unknown"
+    except RuntimeError:
+        raise
+
+def get_git_tag(search_path: Path = Path(".")) -> str:
+    """Return the most recent git tag, or 'untagged' if none exist."""
+    search_path = Path(search_path)
+    try:
+        v = _run_git(["describe", "--tags", "--abbrev=0"], search_path)
+        return v if v else "untagged"
+    except RuntimeError:
+        raise
+
+def get_git_commit_count(search_path: Path = Path(".")) -> str:
+    """Return total number of commits as a string, or 'unknown' on failure."""
+    search_path = Path(search_path)
+    try:
+        v = _run_git(["rev-list", "--count", "HEAD"], search_path)
+        return v if v else "unknown"
+    except RuntimeError:
+        raise
+
+def get_git_status(search_path: Path = Path(".")) -> str:
+    """Return 'clean' or 'dirty' based on working tree state, or 'unknown' on failure.
+
+    IMPORTANT: Uses direct subprocess.run (not _run_git) to distinguish
+    non-zero exit (not a git repo) from zero exit with empty output (clean).
+    Never returns 'clean' on failure — that would be a false positive.
+    """
+    search_path = Path(search_path)
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=str(search_path),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode != 0:
+            return "unknown"
+        return "dirty" if result.stdout.strip() else "clean"
+    except FileNotFoundError:
+        raise RuntimeError(
+            "git is not installed or not on PATH. "
+            "Install git to use git-based badge sources."
+        )
+    except subprocess.TimeoutExpired:
+        return "unknown"
