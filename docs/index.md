@@ -87,6 +87,22 @@ Typer-powered CLI with Rich progress bars, error panels, summary table, and an `
 
 ---
 
+## Why badgeshield instead of shields.io?
+
+shields.io is great — but it makes an HTTP call to an external server on every CI run. **badgeshield generates badges entirely offline:**
+
+- **No network calls** — works in air-gapped CI, behind corporate proxies, and offline laptops
+- **No rate limits** — generate thousands of badges in a single run
+- **No data sent externally** — version numbers, branch names, and repo stats stay local
+- **Reproducible** — same inputs always produce the same SVG, no caching surprises
+
+```bash
+# Generate every standard badge for your Python project in one command
+badgeshield preset --all --output_path ./badges/ --format markdown
+```
+
+---
+
 ## Quick Look
 
 === "Python API"

@@ -274,3 +274,21 @@ pct = parse_coverage_xml("coverage.xml", metric="branch")
 
 !!! warning "GitLab SVG links"
     GitLab's Markdown renderer does not follow hyperlinks embedded inside SVG files when the SVG is linked directly. Wrap the `<img>` in an `<a>` tag in HTML, or use Markdown image syntax with a surrounding link.
+
+---
+
+## Local Data Sources
+
+`sources.py` provides functions for reading local project metadata — no network calls.
+
+```python
+from pathlib import Path
+from badgeshield import get_version, get_git_branch, get_lines_of_code
+
+# Reads pyproject.toml → setup.py → version.py → git tag, in order
+version = get_version(Path("."))          # "1.2.3"
+
+branch = get_git_branch(Path("."))        # "main"
+
+loc = get_lines_of_code(Path("."), extensions=(".py", ".js"))  # "4,821"
+```

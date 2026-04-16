@@ -317,3 +317,42 @@ badgeshield audit badges/build.svg --json
 ```bash
 for f in badges/*.svg; do badgeshield audit "$f"; done
 ```
+
+---
+
+## Preset Badges
+
+Generate badges from named presets — no need to specify colors or text manually.
+
+### List available presets
+
+```bash
+badgeshield presets
+```
+
+### Generate a single preset
+
+```bash
+# Cosmetic preset — value is fixed
+badgeshield preset passing --output_path ./badges/
+
+# Data-wired preset — value resolved from local repo
+badgeshield preset version --output_path ./badges/
+badgeshield preset lines --extensions .py --extensions .js --output_path ./badges/
+badgeshield preset tests --junit tests/junit.xml --output_path ./badges/
+```
+
+### Generate all presets at once
+
+```bash
+badgeshield preset --all --output_path ./badges/ --format markdown
+```
+
+### Embed snippets
+
+Add `--format markdown|rst|html` to any command to print an embed snippet:
+
+```bash
+badgeshield preset version --format markdown
+# output: ![version](./version.svg)
+```

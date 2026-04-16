@@ -83,6 +83,8 @@ nav:
     - Coverage: 'reference/coverage.md'
     - CLI Module: 'reference/batch_generator_cli.md'
     - Utilities: 'reference/utils.md'
+    - Sources: 'reference/sources.md'
+    - Presets: 'reference/presets.md'
   - 🔗 Helpful Links: 'helpful_links.md'
   - ❓ FAQ: 'faq.md'
         
