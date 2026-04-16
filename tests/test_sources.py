@@ -10,6 +10,10 @@ from badgeshield.sources import (
     get_version,
     get_license,
     get_python_requires,
+    get_git_branch,
+    get_git_tag,
+    get_git_commit_count,
+    get_git_status,
 )
 
 
@@ -99,39 +103,33 @@ def _init_git_repo(path: Path, tag: Optional[str] = None) -> bool:
 
 
 def test_get_git_branch(tmp_path):
-    from badgeshield.sources import get_git_branch
     if not _init_git_repo(tmp_path):
         pytest.skip("git unavailable or commit failed")
     branch = get_git_branch(tmp_path)
     assert branch in ("main", "master", "HEAD")  # default varies by git config
 
 def test_get_git_tag_with_tag(tmp_path):
-    from badgeshield.sources import get_git_tag
     if not _init_git_repo(tmp_path, tag="1.0.0"):
         pytest.skip("git unavailable or commit failed")
     assert get_git_tag(tmp_path) == "1.0.0"
 
 def test_get_git_tag_no_tags_returns_untagged(tmp_path):
-    from badgeshield.sources import get_git_tag
     if not _init_git_repo(tmp_path):
         pytest.skip("git unavailable or commit failed")
     assert get_git_tag(tmp_path) == "untagged"
 
 def test_get_git_commit_count(tmp_path):
-    from badgeshield.sources import get_git_commit_count
     if not _init_git_repo(tmp_path):
         pytest.skip("git unavailable or commit failed")
     count = get_git_commit_count(tmp_path)
     assert count.isdigit() and int(count) >= 1
 
 def test_get_git_status_clean(tmp_path):
-    from badgeshield.sources import get_git_status
     if not _init_git_repo(tmp_path):
         pytest.skip("git unavailable or commit failed")
     assert get_git_status(tmp_path) == "clean"
 
 def test_get_git_status_dirty(tmp_path):
-    from badgeshield.sources import get_git_status
     if not _init_git_repo(tmp_path):
         pytest.skip("git unavailable or commit failed")
     (tmp_path / "dirty.txt").write_text("change", encoding="utf-8")
@@ -139,7 +137,6 @@ def test_get_git_status_dirty(tmp_path):
 
 def test_get_git_status_non_repo_returns_unknown(tmp_path):
     """Non-git directory returns 'unknown', never 'clean' (would be a false positive)."""
-    from badgeshield.sources import get_git_status
     assert get_git_status(tmp_path) == "unknown"
 
 def test_git_raises_runtime_error_when_git_missing(tmp_path, monkeypatch):
@@ -151,3 +148,14 @@ def test_git_raises_runtime_error_when_git_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(_sp2, "run", raise_file_not_found)
     with pytest.raises(RuntimeError, match="git is not installed"):
         src_mod.get_git_branch(tmp_path)
+
+
+def test_get_git_status_raises_runtime_error_when_git_missing(tmp_path, monkeypatch):
+    """get_git_status raises RuntimeError (not FileNotFoundError) when git not on PATH."""
+    import subprocess as _sp3
+    def raise_file_not_found(*args, **kwargs):
+        raise FileNotFoundError("git not found")
+    monkeypatch.setattr(_sp3, "run", raise_file_not_found)
+    from badgeshield.sources import get_git_status
+    with pytest.raises(RuntimeError, match="git is not installed"):
+        get_git_status(tmp_path)
