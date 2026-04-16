@@ -1,10 +1,7 @@
 """Tests for sources.py — local data extraction functions."""
 from __future__ import annotations
 
-import subprocess
-import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -28,6 +25,18 @@ def test_get_version_from_version_py(tmp_path):
     (tmp_path / "setup.py").write_text("setup(name='pkg', version=get_version())\n", encoding="utf-8")
     (tmp_path / "version.py").write_text('__version__ = "3.1.4"\n', encoding="utf-8")
     assert get_version(tmp_path) == "3.1.4"
+
+def test_get_version_from_git_tag(tmp_path):
+    """Step 4: git tag fallback when no file-based sources exist."""
+    import subprocess as _sp
+    _sp.run(["git", "init"], cwd=str(tmp_path), capture_output=True)
+    _sp.run(["git", "config", "user.email", "t@t.com"], cwd=str(tmp_path), capture_output=True)
+    _sp.run(["git", "config", "user.name", "T"], cwd=str(tmp_path), capture_output=True)
+    (tmp_path / "f.txt").write_text("hi", encoding="utf-8")
+    _sp.run(["git", "add", "."], cwd=str(tmp_path), capture_output=True)
+    _sp.run(["git", "commit", "-m", "init"], cwd=str(tmp_path), capture_output=True)
+    _sp.run(["git", "tag", "4.5.6"], cwd=str(tmp_path), capture_output=True)
+    assert get_version(tmp_path) == "4.5.6"
 
 def test_get_version_fallback_unknown(tmp_path):
     assert get_version(tmp_path) == "unknown"
