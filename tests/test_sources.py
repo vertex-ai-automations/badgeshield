@@ -1,6 +1,7 @@
 """Tests for sources.py — local data extraction functions."""
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 
@@ -14,6 +15,7 @@ from badgeshield.sources import (
     get_git_tag,
     get_git_commit_count,
     get_git_status,
+    get_lines_of_code,
 )
 
 
@@ -159,3 +161,108 @@ def test_get_git_status_raises_runtime_error_when_git_missing(tmp_path, monkeypa
     from badgeshield.sources import get_git_status
     with pytest.raises(RuntimeError, match="git is not installed"):
         get_git_status(tmp_path)
+
+
+# ---------------------------------------------------------------------------
+# get_lines_of_code
+# ---------------------------------------------------------------------------
+
+def test_get_lines_of_code_basic(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\ny = 2\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("z = 3\n", encoding="utf-8")
+    assert get_lines_of_code(tmp_path) == "3"
+
+def test_get_lines_of_code_excludes_dirs(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\n", encoding="utf-8")
+    venv = tmp_path / ".venv"
+    venv.mkdir()
+    (venv / "hidden.py").write_text("y = 2\n" * 100, encoding="utf-8")
+    assert get_lines_of_code(tmp_path) == "1"
+
+def test_get_lines_of_code_extensions_filter(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / "b.js").write_text("let x = 1;\nlet y = 2;\n", encoding="utf-8")
+    assert get_lines_of_code(tmp_path, extensions=(".js",)) == "2"
+
+def test_get_lines_of_code_no_match_returns_zero(tmp_path):
+    (tmp_path / "a.txt").write_text("hello\n", encoding="utf-8")
+    assert get_lines_of_code(tmp_path) == "0"
+
+def test_get_lines_of_code_blank_lines_not_counted(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\n\n\ny = 2\n", encoding="utf-8")
+    assert get_lines_of_code(tmp_path) == "2"
+
+def test_get_lines_of_code_formatted_with_commas(tmp_path):
+    for i in range(1200):
+        (tmp_path / f"f{i}.py").write_text("x = 1\n", encoding="utf-8")
+    result = get_lines_of_code(tmp_path)
+    assert "," in result  # e.g. "1,200"
+
+
+# ---------------------------------------------------------------------------
+# get_test_results
+# ---------------------------------------------------------------------------
+
+JUNIT_ALL_PASS = """<?xml version="1.0"?>
+<testsuite tests="5" failures="0" errors="0">
+  <testcase name="test_a"/><testcase name="test_b"/>
+  <testcase name="test_c"/><testcase name="test_d"/>
+  <testcase name="test_e"/>
+</testsuite>"""
+
+JUNIT_WITH_FAILURES = """<?xml version="1.0"?>
+<testsuite tests="10" failures="2" errors="1">
+  <testcase name="test_a"/>
+  <testcase name="test_b"><failure>bad</failure></testcase>
+</testsuite>"""
+
+def test_get_test_results_all_pass(tmp_path):
+    from badgeshield.sources import get_test_results
+    f = tmp_path / "junit.xml"
+    f.write_text(JUNIT_ALL_PASS, encoding="utf-8")
+    assert get_test_results(f) == "5 passed"
+
+def test_get_test_results_with_failures(tmp_path):
+    from badgeshield.sources import get_test_results
+    f = tmp_path / "junit.xml"
+    f.write_text(JUNIT_WITH_FAILURES, encoding="utf-8")
+    result = get_test_results(f)
+    assert "failed" in result
+
+def test_get_test_results_missing_file(tmp_path):
+    from badgeshield.sources import get_test_results
+    with pytest.raises(FileNotFoundError):
+        get_test_results(tmp_path / "nonexistent.xml")
+
+def test_get_test_results_malformed_xml(tmp_path):
+    from badgeshield.sources import get_test_results
+    f = tmp_path / "bad.xml"
+    f.write_text("<not valid xml", encoding="utf-8")
+    with pytest.raises(ET.ParseError):
+        get_test_results(f)
+
+def test_get_test_results_non_junit_xml(tmp_path):
+    from badgeshield.sources import get_test_results
+    f = tmp_path / "other.xml"
+    f.write_text("<project><name>foo</name></project>", encoding="utf-8")
+    with pytest.raises(ValueError, match="JUnit"):
+        get_test_results(f)
+
+# ---------------------------------------------------------------------------
+# get_coverage
+# ---------------------------------------------------------------------------
+
+COVERAGE_XML = """<?xml version="1.0"?>
+<coverage line-rate="0.82" branch-rate="0.75" version="7.0">
+</coverage>"""
+
+def test_get_coverage_returns_percentage(tmp_path):
+    from badgeshield.sources import get_coverage
+    f = tmp_path / "coverage.xml"
+    f.write_text(COVERAGE_XML, encoding="utf-8")
+    assert get_coverage(f) == "82%"
+
+def test_get_coverage_missing_file(tmp_path):
+    from badgeshield.sources import get_coverage
+    with pytest.raises(FileNotFoundError):
+        get_coverage(tmp_path / "missing.xml")

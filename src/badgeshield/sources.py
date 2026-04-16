@@ -208,6 +208,46 @@ def get_git_commit_count(search_path: Path = Path(".")) -> str:
     return v if v else "unknown"
 
 
+def _os_walk(path: Path):
+    """Fallback os.walk wrapper for Path.walk() which requires Python 3.12."""
+    import os
+    for root, dirs, files in os.walk(str(path)):
+        yield root, dirs, files
+
+
+def get_lines_of_code(
+    search_path: Path = Path("."),
+    extensions: tuple = (".py",),
+) -> str:
+    """Count non-blank lines across source files matching extensions.
+
+    Never raises. Returns '0' if no files match. Returns comma-formatted integer string.
+    Excludes directories in _EXCLUDED_DIRS and any directory ending with .egg-info.
+    """
+    search_path = Path(search_path)
+    total = 0
+
+    # Use Path.walk() on Python 3.12+, fall back to os.walk otherwise
+    try:
+        walker = search_path.walk()
+    except AttributeError:
+        walker = _os_walk(search_path)
+
+    for root, dirs, files in walker:
+        root = Path(root)
+        # str(d) works for both Path objects (3.12 walk) and str names (os.walk)
+        dirs[:] = [d for d in dirs if str(d) not in _EXCLUDED_DIRS and not str(d).endswith(".egg-info")]
+        for fname in files:
+            if any(str(fname).endswith(ext) for ext in extensions):
+                try:
+                    text = (root / fname).read_text(encoding="utf-8", errors="ignore")
+                    total += sum(1 for line in text.splitlines() if line.strip())
+                except Exception:
+                    pass
+
+    return f"{total:,}"
+
+
 def get_git_status(search_path: Path = Path(".")) -> str:
     """Return 'clean' or 'dirty' based on working tree state, or 'unknown' on failure.
 
