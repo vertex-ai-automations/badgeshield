@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import re
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from .coverage import parse_coverage_xml
 
 _EXCLUDED_DIRS = {
     "__pycache__",
@@ -274,3 +277,51 @@ def get_git_status(search_path: Path = Path(".")) -> str:
         )
     except subprocess.TimeoutExpired:
         return "unknown"
+
+
+def get_test_results(junit_xml: Path) -> str:
+    """Parse a JUnit XML report and return a results summary string.
+
+    Returns e.g. '47 passed' or '2 failed / 49'.
+
+    Raises
+    ------
+    FileNotFoundError
+        If junit_xml does not exist.
+    xml.etree.ElementTree.ParseError
+        If the XML is malformed.
+    ValueError
+        If the root element is not a recognisable JUnit structure.
+    """
+    junit_xml = Path(junit_xml)
+    if not junit_xml.is_file():
+        raise FileNotFoundError(f"JUnit XML not found: {junit_xml}")
+
+    tree = ET.parse(junit_xml)  # raises ET.ParseError on bad XML
+    root = tree.getroot()
+
+    if root.tag == "testsuites":
+        suites = list(root.findall("testsuite"))
+    elif root.tag == "testsuite":
+        suites = [root]
+    else:
+        raise ValueError(
+            f"Not a recognisable JUnit XML structure — root element is <{root.tag}>. "
+            "Expected <testsuite> or <testsuites>."
+        )
+
+    total = sum(int(s.get("tests", 0)) for s in suites)
+    failures = sum(int(s.get("failures", 0)) + int(s.get("errors", 0)) for s in suites)
+
+    if failures:
+        return f"{failures} failed / {total}"
+    return f"{total} passed"
+
+
+def get_coverage(coverage_xml: Path) -> str:
+    """Return line coverage percentage string e.g. '82%'.
+
+    Raises FileNotFoundError or ValueError on bad input (delegates to parse_coverage_xml).
+    """
+    pct = parse_coverage_xml(coverage_xml, metric="line")
+    return f"{pct:.0f}%"
