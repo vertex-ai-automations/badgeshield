@@ -5,6 +5,8 @@ hide:
   - toc
 ---
 
+---
+
 ## Why BadgeShield?
 
 BadgeShield gives you pixel-perfect SVG badges — rectangular, pill, circle, framed, or banner — with accurate text sizing powered by real font metrics. Drop it into a CI pipeline, a Python script, or call it from the terminal.
