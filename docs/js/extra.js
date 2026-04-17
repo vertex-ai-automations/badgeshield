@@ -131,6 +131,7 @@ function rotateCarousel() {
   const items = document.querySelectorAll('.bs-carousel__badge');
   if (!items.length) return;
 
+  carouselIndex = carouselIndex % items.length;
   items[carouselIndex].classList.remove('bs-carousel__badge--active');
   carouselIndex = (carouselIndex + 1) % items.length;
   items[carouselIndex].classList.add('bs-carousel__badge--active');
@@ -186,6 +187,7 @@ function initStatCounters() {
       if (!entry.isIntersecting) return;
       const el     = entry.target;
       const target = parseInt(el.dataset.target, 10);
+      if (isNaN(target)) return;
       if (prefersReduced) {
         el.textContent = target;
       } else {
@@ -202,7 +204,7 @@ function initStatCounters() {
 function teardown() {
   clearTimeout(typingTimer);
   clearTimeout(carouselTimer);
-  if (revealObserver) revealObserver.disconnect();
+  if (revealObserver) { revealObserver.disconnect(); revealObserver = null; }
   typingIndex  = 0;
   charIndex    = 0;
   isDeleting   = false;
@@ -213,23 +215,27 @@ function teardown() {
 function init() {
   teardown();
 
-  initCarousel();
+  if (document.getElementById('bs-badge-0')) {
+    initCarousel();
+  }
   initScrollReveal();
   initStatCounters();
 
-  // Typing effect only on the home page (where the element exists)
+  // Typing effect and carousel only on the home page (where the element exists)
   if (document.getElementById('bs-typing-text')) {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     typingTimer = setTimeout(runTyping, 400);
-    // Start carousel rotation after first badge is shown
-    carouselTimer = setTimeout(rotateCarousel, 2500);
+    if (!prefersReduced) {
+      carouselTimer = setTimeout(rotateCarousel, 2500);
+    }
   }
 }
 
-// Standard page load
-document.addEventListener('DOMContentLoaded', init);
-
-// MkDocs Material instant navigation — `document$` is an RxJS Subject
-// exposed globally by the Material theme bundle. It emits on every page swap.
+// Register init: use MkDocs Material instant navigation if available,
+// otherwise fall back to DOMContentLoaded. Using both causes double-init
+// on first load when instant navigation is enabled.
 if (typeof document$ !== 'undefined') {
   document$.subscribe(init);
+} else {
+  document.addEventListener('DOMContentLoaded', init);
 }
