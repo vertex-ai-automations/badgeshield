@@ -1,0 +1,72 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="bs-hero">
+  <!-- Glowing orb background -->
+  <div class="bs-hero__orb" aria-hidden="true"></div>
+
+  <!-- Logo -->
+  <img
+    class="bs-hero__logo"
+    src="{{ 'img/badgeshield_192x192.png' | url }}"
+    alt="BadgeShield Logo"
+    width="120"
+    height="120"
+  >
+
+  <!-- Headline -->
+  <h1 class="bs-hero__title">BadgeShield</h1>
+
+  <!-- Typing subtitle -->
+  <p class="bs-hero__subtitle">
+    <span id="bs-typing-text"></span><span class="bs-hero__cursor" aria-hidden="true"></span>
+  </p>
+
+  <!-- CTAs -->
+  <div class="bs-hero__ctas">
+    <a href="{{ 'installation/' | url }}" class="md-button md-button--primary">
+      Get Started
+    </a>
+    <a href="https://github.com/vertex-ai-automations/badgeshield" class="md-button">
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- Animated badge carousel -->
+  <div class="bs-carousel" aria-label="Badge examples" role="img">
+    <div class="bs-carousel__badge bs-carousel__badge--active" id="bs-badge-0"></div>
+    <div class="bs-carousel__badge" id="bs-badge-1"></div>
+    <div class="bs-carousel__badge" id="bs-badge-2"></div>
+    <div class="bs-carousel__badge" id="bs-badge-3"></div>
+    <div class="bs-carousel__badge" id="bs-badge-4"></div>
+  </div>
+
+  <!-- Stat counters -->
+  <div class="bs-stats">
+    <div class="bs-stat">
+      <span class="bs-stat__number stat-number" data-target="51">0</span>
+      <span class="bs-stat__label">Colors</span>
+    </div>
+    <div class="bs-stat">
+      <span class="bs-stat__number stat-number" data-target="5">0</span>
+      <span class="bs-stat__label">Templates</span>
+    </div>
+    <div class="bs-stat">
+      <span class="bs-stat__number stat-number" data-target="4">0</span>
+      <span class="bs-stat__label">Styles</span>
+    </div>
+  </div>
+
+  <!-- PyPI shields -->
+  <div class="bs-shields">
+    <img alt="PyPI" src="https://img.shields.io/pypi/v/badgeshield?color=7c3aed&logo=pypi&logoColor=white">
+    <img alt="Python" src="https://img.shields.io/pypi/pyversions/badgeshield?color=7c3aed&logo=python&logoColor=white">
+    <img alt="License" src="https://img.shields.io/badge/license-MIT-7c3aed.svg">
+    <img alt="Downloads" src="https://img.shields.io/pypi/dm/badgeshield?color=7c3aed">
+    <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/vertex-ai-automations/badgeshield/release.yml?branch=main&label=CI&logo=github">
+  </div>
+</div>
+
+<!-- Render the rest of the page markdown (feature grid, Quick Look, etc.) -->
+{{ super() }}
+{% endblock %}
