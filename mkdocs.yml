@@ -37,8 +37,8 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   font:
-    text: Inter
-    code: JetBrains Mono
+    text: DM Sans
+    code: Fira Code
   features:
     # Navigation
     - navigation.instant
@@ -182,6 +182,9 @@ markdown_extensions:
 # Customization
 extra_css:
   - css/extra.css
+
+extra_javascript:
+  - js/extra.js
 
 extra:
   generator: false
