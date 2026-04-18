@@ -83,10 +83,10 @@ badgeshield single --help
 
 | Flag | Required | Description |
 |------|:--------:|-------------|
-| `--left-text` | ✅ | Text on the left segment |
-| `--left-color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
-| `--badge-name` | ✅ | Output SVG filename — must end with `.svg` |
-| `--output-path` | | Output directory; defaults to CWD |
+| `--left_text` | ✅ | Text on the left segment |
+| `--left_color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
+| `--badge_name` | ✅ | Output SVG filename — must end with `.svg` |
+| `--output_path` | | Output directory; defaults to CWD |
 | `--template` | | `DEFAULT` (default), `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER` |
 | `--style` | | `FLAT` (default), `ROUNDED`, `GRADIENT`, or `SHADOWED` |
 | `--right-text` | | Text on the right segment |
@@ -100,6 +100,7 @@ badgeshield single --help
 | `--left-title` | | Accessible title for the left segment |
 | `--right-title` | | Accessible title for the right segment |
 | `--log-level` | | `DEBUG`, `INFO` (default), `WARNING`, `ERROR`, `CRITICAL` |
+| `--format` | | Print an embed snippet to stdout: `markdown`, `rst`, or `html` |
 
 ### Examples
 
@@ -107,87 +108,87 @@ badgeshield single --help
 
 ```bash
 badgeshield single \
-  --left-text "flake8" \
-  --left-color "#4b0082" \
-  --badge-name flake8.svg
+  --left_text "flake8" \
+  --left_color "#4b0082" \
+  --badge_name flake8.svg
 ```
 
 **Two-part badge:**
 
 ```bash
 badgeshield single \
-  --left-text "coverage" \
-  --left-color "#555555" \
+  --left_text "coverage" \
+  --left_color "#555555" \
   --right-text "94%" \
   --right-color "#44cc11" \
-  --badge-name coverage.svg \
-  --output-path ./badges
+  --badge_name coverage.svg \
+  --output_path ./badges
 ```
 
 **With logo:**
 
 ```bash
 badgeshield single \
-  --left-text "python" \
-  --left-color "#3776ab" \
+  --left_text "python" \
+  --left_color "#3776ab" \
   --logo path/to/python.png \
   --logo-tint "#ffffff" \
-  --badge-name python.svg \
-  --output-path ./badges
+  --badge_name python.svg \
+  --output_path ./badges
 ```
 
 **Pill template with gradient style:**
 
 ```bash
 badgeshield single \
-  --left-text "build" \
-  --left-color "#555555" \
+  --left_text "build" \
+  --left_color "#555555" \
   --right-text "passing" \
   --right-color "#44cc11" \
   --template PILL \
   --style gradient \
-  --badge-name build-pill.svg \
-  --output-path ./badges
+  --badge_name build-pill.svg \
+  --output_path ./badges
 ```
 
 **Circle frame template:**
 
 ```bash
 badgeshield single \
-  --left-text "MH" \
-  --left-color "#673ab7" \
+  --left_text "MH" \
+  --left_color "#673ab7" \
   --template CIRCLE_FRAME \
   --frame FRAME1 \
-  --badge-name initials.svg \
-  --output-path ./badges
+  --badge_name initials.svg \
+  --output_path ./badges
 ```
 
 **Banner template:**
 
 ```bash
 badgeshield single \
-  --left-text "badgeshield" \
-  --left-color "#1a1a2e" \
+  --left_text "badgeshield" \
+  --left_color "#1a1a2e" \
   --right-text "v1.0" \
   --right-color "#16213e" \
   --template BANNER \
-  --badge-name banner.svg \
-  --output-path ./badges
+  --badge_name banner.svg \
+  --output_path ./badges
 ```
 
 **With links and titles (accessibility):**
 
 ```bash
 badgeshield single \
-  --left-text "build" \
-  --left-color "#555" \
+  --left_text "build" \
+  --left_color "#555" \
   --right-text "passing" \
   --right-color "#44cc11" \
   --left-link "https://example.com/pipeline" \
   --right-link "https://example.com/results" \
   --left-title "Pipeline status" \
   --right-title "Test result" \
-  --badge-name build.svg
+  --badge_name build.svg
 ```
 
 ---
@@ -210,6 +211,7 @@ badgeshield batch --help
 | `--style` | | `FLAT` (default), `ROUNDED`, `GRADIENT`, or `SHADOWED` |
 | `--log-level` | | Logging verbosity |
 | `--max-workers` | | Parallel threads (default: 4) |
+| `--format` | | Print an embed snippet per badge to stdout: `markdown`, `rst`, or `html` |
 
 ### Config file format
 

@@ -86,12 +86,15 @@ color = coverage_color(pct)               # str, e.g. "#44cc11"
 
 ## CLI
 
-### Why did the flags change from `--left_text` to `--left-text`?
+### Do I use underscores or hyphens in CLI flags?
 
-BadgeShield's CLI was rewritten with [Typer](https://typer.tiangolo.com/), which automatically converts Python parameter names (using underscores) to POSIX-style CLI flags (using hyphens). This is standard CLI convention.
+It depends on the subcommand. The `single` command uses explicit underscore flags for its four core arguments — this is intentional to preserve backwards compatibility:
 
-**Old (argparse):** `--left_text "build"`
-**New (Typer):** `--left-text "build"`
+```bash
+badgeshield single --left_text "build" --left_color GREEN --badge_name build.svg --output_path ./badges
+```
+
+All other `single` flags (e.g. `--right-text`, `--logo-tint`, `--id-suffix`) use hyphens, as does every flag in the `batch`, `coverage`, and `audit` subcommands. When in doubt, run `badgeshield <subcommand> --help` to see the exact flag names.
 
 ---
 
@@ -100,11 +103,11 @@ BadgeShield's CLI was rewritten with [Typer](https://typer.tiangolo.com/), which
 An error panel is printed to stdout describing the cause. Common reasons:
 
 - **Invalid color**: unrecognized `BadgeColor` name or malformed hex string.
-- **Missing `.svg` suffix**: `--badge-name` must end with `.svg`.
+- **Missing `.svg` suffix**: the badge name argument must end with `.svg`.
 - **Invalid template**: must be `DEFAULT`, `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER`.
 - **Invalid style**: must be `FLAT`, `ROUNDED`, `GRADIENT`, or `SHADOWED`.
 - **Missing `--frame`**: required when `--template CIRCLE_FRAME` is used.
-- **Output path not found**: the `--output-path` directory must already exist.
+- **Output path not found**: the output directory must already exist.
 
 ---
 

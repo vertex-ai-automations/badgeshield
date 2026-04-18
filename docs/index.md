@@ -103,13 +103,13 @@ badgeshield preset --all --output_path ./badges/ --format markdown
 
     ```bash
     badgeshield single \
-      --left-text "coverage" \
-      --left-color "#555555" \
+      --left_text "coverage" \
+      --left_color "#555555" \
       --right-text "94%" \
       --right-color "#44cc11" \
       --style gradient \
-      --badge-name coverage.svg \
-      --output-path ./badges
+      --badge_name coverage.svg \
+      --output_path ./badges
     ```
 
 === "CLI — batch"
