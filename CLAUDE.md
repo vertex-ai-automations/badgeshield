@@ -27,8 +27,9 @@ mkdocs serve    # Serve docs locally
 
 ### Install for development
 ```bash
-pip install -e .
-pip install -r requirements.txt
+pip install -e ".[dev]"          # runtime + test deps
+pip install -e ".[dev,image]"    # also include Pillow for accurate text sizing
+pip install -r requirements-dev.txt  # alternative: install test deps directly
 ```
 
 ### CLI usage
