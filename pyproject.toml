@@ -40,7 +40,6 @@ issues = "https://github.com/vertex-ai-automations/badgeshield/issues/new"
 [project.scripts]
 badgeshield = "badgeshield.generate_badge_cli:main"
 
-# version and requirements are dynamically pulled from setup.py. We may enable this in future if setup.py gets deprecated
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
