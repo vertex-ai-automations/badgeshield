@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path  # kept for get_type_hints() resolution of Callable[[Path], str]
-from typing import Callable, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 from .utils import BadgeColor
 from .sources import (
@@ -29,7 +29,7 @@ class Preset:
     description: str = ""
 
 
-PRESETS: dict[str, Preset] = {
+PRESETS: Dict[str, Preset] = {
     # --- Data-wired (search_path-based) ---
     "version": Preset(
         label="version", color=BadgeColor.DARK_BLUE, source=get_version,

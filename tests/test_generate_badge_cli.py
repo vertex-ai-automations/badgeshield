@@ -10,7 +10,7 @@ class TestCLICommands:
     """CLI tests for single, batch, coverage — network blocked."""
 
     pytestmark = pytest.mark.usefixtures("block_network")
-    runner = CliRunner(mix_stderr=False)
+    runner = CliRunner()
 
     # ---------------------------------------------------------------------------
     # single command

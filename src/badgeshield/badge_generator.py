@@ -148,6 +148,8 @@ class BadgeBatchGenerator:
 _DEFAULT_FONT_SIZE = 110
 _FALLBACK_DEFAULT_CHAR_WIDTH = 8
 _FALLBACK_EAST_ASIAN_CHAR_WIDTH = 16
+# Pixel widths at effective ~10px DejaVu Sans size (SVG font-size="110" scaled by 0.1).
+# Used when Pillow is not installed. Adjust if badge text widths look off without Pillow.
 _FALLBACK_CHAR_WIDTHS = {
     " ": 4,
     "-": 6,
@@ -202,7 +204,7 @@ _FALLBACK_CHAR_WIDTHS = {
 
 
 class BadgeGenerator:
-    """Class to generate custom badges for GitLab."""
+    """Generate customizable SVG badges."""
 
     _template_cache: ClassVar[Dict[str, Template]] = {}
     _RENDERERS: ClassVar[Dict[BadgeTemplate, Callable[..., str]]] = {}  # populated after class body
@@ -226,6 +228,14 @@ class BadgeGenerator:
             Visual style preset. Defaults to :attr:`BadgeStyle.FLAT`.
         """
 
+        if isinstance(log_level, str):
+            try:
+                log_level = LogLevel[log_level.upper()]
+            except KeyError:
+                raise ValueError(
+                    f"Invalid log_level '{log_level}'. "
+                    f"Choose from: {', '.join(lv.name for lv in LogLevel)}"
+                )
         self.template_name = str(template)
         self.template_enum = template  # kept for registry dispatch
         self._last_render_context: Optional[dict] = None

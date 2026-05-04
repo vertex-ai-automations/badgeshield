@@ -50,16 +50,16 @@ def _format_snippet(svg_path: str, alt_text: str, fmt: str) -> str:
 
 @app.command()
 def single(
-    left_text: str = typer.Option(..., "--left_text", help="Text for the left section"),
+    left_text: str = typer.Option(..., "--left-text", help="Text for the left section"),
     left_color: str = typer.Option(
-        ..., "--left_color", help="Hex (#RRGGBB) or BadgeColor name e.g. GREEN"
+        ..., "--left-color", help="Hex (#RRGGBB) or BadgeColor name e.g. GREEN"
     ),
     badge_name: str = typer.Option(
-        ..., "--badge_name", help="Output filename, must end with .svg"
+        ..., "--badge-name", help="Output filename, must end with .svg"
     ),
     template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"),
     output_path: Optional[str] = typer.Option(
-        None, "--output_path", help="Output directory; defaults to current directory"
+        None, "--output-path", help="Output directory; defaults to current directory"
     ),
     right_text: Optional[str] = typer.Option(None, help="Text for the right section (omit for label-only badge)"),
     right_color: Optional[str] = typer.Option(None, help="Hex (#RRGGBB) or BadgeColor name for right section"),
@@ -353,7 +353,11 @@ def audit(
     svg_file: Path = typer.Argument(..., help="Path to SVG file to audit"),
     json_output: bool = typer.Option(False, "--json", help="Output machine-readable JSON"),
 ) -> None:
-    """Audit an SVG file for external resource references."""
+    """Audit an SVG file for external resource references.
+
+    Scans element attributes and inline style url() values. Does not scan
+    element text content or script blocks.
+    """
     try:
         tree = ET.parse(svg_file)
     except FileNotFoundError:
@@ -455,7 +459,7 @@ def _run_all_presets(
                     continue
             elif name == "coverage":
                 if coverage_xml is None:
-                    skipped.append((name, "no --coverage_xml provided"))
+                    skipped.append((name, "no --coverage-xml provided"))
                     continue
                 try:
                     right_text = get_coverage(coverage_xml)
@@ -468,7 +472,7 @@ def _run_all_presets(
                 except Exception as exc:
                     skipped.append((name, str(exc)))
                     continue
-                if right_text in _SKIP_VALUES:
+                if right_text in _SKIP_VALUES or right_text == "0":
                     skipped.append((name, f"resolved to '{right_text}'"))
                     continue
             elif p.source is not None:
@@ -522,14 +526,14 @@ def _run_all_presets(
 @app.command(name="preset")
 def preset_cmd(
     name: Optional[str] = typer.Argument(None, help="Preset name (see 'badgeshield presets')"),
-    badge_name: Optional[str] = typer.Option(None, "--badge_name", help="Output filename (default: <preset-name>.svg)"),
-    output_path: Optional[str] = typer.Option(None, "--output_path", help="Output directory (default: current directory)"),
-    search_path: str = typer.Option(".", "--search_path", help="Repo root used to resolve data-wired preset values"),
+    badge_name: Optional[str] = typer.Option(None, "--badge-name", help="Output filename (default: <preset-name>.svg)"),
+    output_path: Optional[str] = typer.Option(None, "--output-path", help="Output directory (default: current directory)"),
+    search_path: str = typer.Option(".", "--search-path", help="Repo root used to resolve data-wired preset values"),
     style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
     format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"),
     extensions: Optional[List[str]] = typer.Option(None, help="File extensions for 'lines' preset, repeatable (default: .py)"),
     junit: Optional[Path] = typer.Option(None, "--junit", help="JUnit XML path required by the 'tests' preset"),
-    coverage_xml: Optional[Path] = typer.Option(None, "--coverage_xml", help="coverage.xml path required by the 'coverage' preset"),
+    coverage_xml: Optional[Path] = typer.Option(None, "--coverage-xml", help="coverage.xml path required by the 'coverage' preset"),
     all_presets: bool = typer.Option(False, "--all", help="Generate all resolvable presets; skips data-wired presets that return 'unknown'"),
 ) -> None:
     """Generate a badge from a named preset (see 'badgeshield presets' for the full list).
@@ -575,22 +579,22 @@ def preset_cmd(
             raise typer.Exit(1)
         try:
             right_text = get_test_results(junit)
-        except (FileNotFoundError, ValueError, Exception) as exc:
+        except Exception as exc:
             _error(str(exc))
             raise typer.Exit(1)
     elif name == "coverage":
         if coverage_xml is None:
-            _error("The 'coverage' preset requires --coverage_xml <path-to-coverage.xml>")
+            _error("The 'coverage' preset requires --coverage-xml <path-to-coverage.xml>")
             raise typer.Exit(1)
         try:
             right_text = get_coverage(coverage_xml)
-        except (FileNotFoundError, ValueError, Exception) as exc:
+        except Exception as exc:
             _error(str(exc))
             raise typer.Exit(1)
     elif p.source is not None:
         try:
             right_text = p.source(sp)
-        except RuntimeError as exc:
+        except Exception as exc:
             _error(str(exc))
             raise typer.Exit(1)
 

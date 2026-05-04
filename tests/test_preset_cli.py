@@ -44,10 +44,10 @@ def test_format_snippet_invalid_format():
 def test_single_with_format_markdown(tmp_path):
     result = runner.invoke(app, [
         "single",
-        "--left_text", "build",
-        "--left_color", "GREEN",
-        "--badge_name", "build.svg",
-        "--output_path", str(tmp_path),
+        "--left-text", "build",
+        "--left-color", "GREEN",
+        "--badge-name", "build.svg",
+        "--output-path", str(tmp_path),
         "--format", "markdown",
     ])
     assert result.exit_code == 0
@@ -58,10 +58,10 @@ def test_single_with_format_markdown(tmp_path):
 def test_single_with_format_rst(tmp_path):
     result = runner.invoke(app, [
         "single",
-        "--left_text", "build",
-        "--left_color", "GREEN",
-        "--badge_name", "build.svg",
-        "--output_path", str(tmp_path),
+        "--left-text", "build",
+        "--left-color", "GREEN",
+        "--badge-name", "build.svg",
+        "--output-path", str(tmp_path),
         "--format", "rst",
     ])
     assert result.exit_code == 0
@@ -71,10 +71,10 @@ def test_single_with_format_rst(tmp_path):
 def test_single_with_format_html(tmp_path):
     result = runner.invoke(app, [
         "single",
-        "--left_text", "build",
-        "--left_color", "GREEN",
-        "--badge_name", "build.svg",
-        "--output_path", str(tmp_path),
+        "--left-text", "build",
+        "--left-color", "GREEN",
+        "--badge-name", "build.svg",
+        "--output-path", str(tmp_path),
         "--format", "html",
     ])
     assert result.exit_code == 0
@@ -99,7 +99,7 @@ def test_presets_list_renders():
 def test_preset_cosmetic_no_args(tmp_path):
     result = runner.invoke(app, [
         "preset", "passing",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "passing.svg").exists()
@@ -109,7 +109,7 @@ def test_preset_default_badge_name(tmp_path):
     """badge_name defaults to {preset-name}.svg."""
     result = runner.invoke(app, [
         "preset", "stable",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "stable.svg").exists()
@@ -118,8 +118,8 @@ def test_preset_default_badge_name(tmp_path):
 def test_preset_override_badge_name(tmp_path):
     result = runner.invoke(app, [
         "preset", "passing",
-        "--badge_name", "ci.svg",
-        "--output_path", str(tmp_path),
+        "--badge-name", "ci.svg",
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "ci.svg").exists()
@@ -133,7 +133,7 @@ def test_preset_unknown_name_exits_1():
 def test_preset_with_format(tmp_path):
     result = runner.invoke(app, [
         "preset", "passing",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
         "--format", "markdown",
     ])
     assert result.exit_code == 0
@@ -147,8 +147,8 @@ def test_preset_data_wired_version(tmp_path):
     )
     result = runner.invoke(app, [
         "preset", "version",
-        "--search_path", str(tmp_path),
-        "--output_path", str(tmp_path),
+        "--search-path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     svg = (tmp_path / "version.svg").read_text(encoding="utf-8")
@@ -159,7 +159,7 @@ def test_preset_tests_requires_junit(tmp_path):
     """tests preset without --junit exits with code 1."""
     result = runner.invoke(app, [
         "preset", "tests",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 1
 
@@ -173,7 +173,7 @@ def test_preset_tests_with_junit(tmp_path):
     result = runner.invoke(app, [
         "preset", "tests",
         "--junit", str(junit),
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "tests.svg").exists()
@@ -186,7 +186,7 @@ def test_preset_tests_with_junit(tmp_path):
 def test_preset_all_generates_cosmetic_badges(tmp_path):
     result = runner.invoke(app, [
         "preset", "--all",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "passing.svg").exists()
@@ -199,8 +199,8 @@ def test_preset_all_with_version_source(tmp_path):
     )
     result = runner.invoke(app, [
         "preset", "--all",
-        "--search_path", str(tmp_path),
-        "--output_path", str(tmp_path),
+        "--search-path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "version.svg").exists()
@@ -213,7 +213,7 @@ def test_preset_all_skips_unresolved(tmp_path, monkeypatch):
     monkeypatch.setattr(PRESETS["branch"], "source", lambda p: "unknown")
     result = runner.invoke(app, [
         "preset", "--all",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert not (tmp_path / "version.svg").exists()
@@ -227,7 +227,7 @@ def test_preset_all_zero_badges_exits_1(tmp_path, monkeypatch):
     monkeypatch.setattr(cli_mod, "PRESETS", {})
     result = runner.invoke(app, [
         "preset", "--all",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 1
 
@@ -235,7 +235,7 @@ def test_preset_all_zero_badges_exits_1(tmp_path, monkeypatch):
 def test_preset_all_format_markdown(tmp_path):
     result = runner.invoke(app, [
         "preset", "--all",
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
         "--format", "markdown",
     ])
     assert result.exit_code == 0
@@ -252,7 +252,7 @@ def test_preset_all_with_junit(tmp_path):
     result = runner.invoke(app, [
         "preset", "--all",
         "--junit", str(junit),
-        "--output_path", str(tmp_path),
+        "--output-path", str(tmp_path),
     ])
     assert result.exit_code == 0
     assert (tmp_path / "tests.svg").exists()

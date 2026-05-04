@@ -476,11 +476,10 @@ def test_get_font_uses_bundled_font(monkeypatch):
 
     original_truetype = ImageFont.truetype
 
-    def patched_truetype(path, size):
-        import os
-        # Allow only the bundled path; block all system paths
-        if "badgeshield" in path and "fonts" in path:
-            return original_truetype(path, size)
+    def patched_truetype(path, size, **kwargs):
+        # Non-string paths (e.g. BytesIO from load_default in newer Pillow) pass through
+        if not isinstance(path, str) or ("badgeshield" in path and "fonts" in path):
+            return original_truetype(path, size, **kwargs)
         raise OSError(f"Blocked system font path: {path}")
 
     monkeypatch.setattr(ImageFont, "truetype", patched_truetype)
@@ -491,10 +490,12 @@ def test_get_font_uses_bundled_font(monkeypatch):
         del gen._badge_font
 
     font = gen._get_font()
-    assert font is not None
-    default_font = ImageFont.load_default()
-    assert type(font) != type(default_font), \
-        "_get_font() returned the fallback bitmap font instead of the bundled TrueType font"
+    assert font is not None, "_get_font() returned None — Pillow may not be installed"
+    # Bundled DejaVuSans is loaded at size 110; load_default() uses size 10.
+    # This confirms the real TrueType font was used, not the fallback.
+    assert font.size == 110, (
+        f"_get_font() returned font at size {font.size}, expected 110 (bundled DejaVuSans)"
+    )
 
 
 @pytest.mark.parametrize("template,kwargs", _SVG_AUDIT_PARAMS,

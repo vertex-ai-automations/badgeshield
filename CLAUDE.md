@@ -33,15 +33,26 @@ pip install -r requirements.txt
 
 ### CLI usage
 ```bash
-badgeshield single --left_text "Build" --left_color GREEN --badge_name build_badge.svg
-badgeshield single --left_text "Status" --left_color "#555555" --badge_name s.svg --style gradient
-badgeshield batch config.json --output_path ./badges/ --style rounded
-badgeshield coverage coverage.xml --badge_name coverage.svg --metric line
+badgeshield single --left-text "Build" --left-color GREEN --badge-name build_badge.svg
+badgeshield single --left-text "Status" --left-color "#555555" --badge-name s.svg --style gradient
+badgeshield single --left-text "Build" --left-color GREEN --badge-name b.svg --format markdown
+badgeshield batch config.json --output-path ./badges/ --style rounded
+badgeshield coverage coverage.xml --badge-name coverage.svg --metric line
 badgeshield audit badge.svg          # check SVG for external URL references
 badgeshield audit badge.svg --json   # machine-readable output
+badgeshield presets                  # list all named presets
+badgeshield preset passing           # generate a single named preset badge
+badgeshield preset version --search-path .   # data-wired preset (reads pyproject.toml/git)
+badgeshield preset tests --junit junit.xml   # test results from JUnit XML
+badgeshield preset coverage --coverage-xml coverage.xml
+badgeshield preset --all --output-path ./badges/  # generate all resolvable presets
 ```
 
-Note: `badge_name` must always end with `.svg`. The `--style` option accepts `FLAT | ROUNDED | GRADIENT | SHADOWED` (case-insensitive; defaults to `flat`). Per-entry `style` keys in batch JSON take priority over the CLI flag.
+Notes:
+- `badge_name` must always end with `.svg`.
+- `--style` accepts `FLAT | ROUNDED | GRADIENT | SHADOWED` (case-insensitive; defaults to `flat`). Per-entry `style` keys in batch JSON take priority over the CLI flag.
+- `--format markdown | rst | html` prints an embed snippet to stdout after generating a badge (available on `single`, `batch`, `coverage`, and `preset` subcommands).
+- `preset --all` skips data-wired presets that return `unknown` or `untagged`; exits 1 if no badges were written at all.
 
 ## Architecture
 
@@ -55,6 +66,10 @@ Note: `badge_name` must always end with `.svg`. The `--style` option accepts `FL
 
 - **`coverage.py`**: Two standalone functions — `parse_coverage_xml(path, metric)` reads `line-rate` or `branch-rate` from a `coverage.xml` produced by `coverage run`, returning a float 0–100; `coverage_color(pct)` maps the percentage to a hex color. The `coverage` CLI subcommand wires these together to produce a DEFAULT-template badge.
 
+- **`presets.py`**: `PRESETS` dict mapping preset names (e.g. `"passing"`, `"version"`) to `Preset` dataclass instances. Each preset has `label`, `color`, `right_text`, `right_color`, and an optional `source` callable `(search_path: Path) -> str`. Presets with `source=None` and no `right_text` require a CLI-provided file path (`tests` needs `--junit`, `coverage` needs `--coverage_xml`). Adding a new preset requires only a new entry in this dict.
+
+- **`sources.py`**: Local project metadata extractors used by data-wired presets. Functions include `get_version` (5-step chain: pyproject.toml → setup.py → `_version.py` → git tag → "unknown"), `get_license`, `get_python_requires`, `get_git_branch`, `get_git_tag`, `get_git_commit_count`, `get_git_status`, `get_lines_of_code` (non-blank line count across source files), `get_test_results` (JUnit XML parser), and `get_coverage` (wraps `parse_coverage_xml`). All git functions use `_run_git()`, which raises `RuntimeError` if git is not on PATH but returns `""` (not an error) on non-zero exit code.
+
 - **`utils.py`**: Four enums — `BadgeColor` (51 colors), `FrameType` (11 PNG frames), `BadgeTemplate` (5 templates), `BadgeStyle` (FLAT/ROUNDED/GRADIENT/SHADOWED). These are the canonical type-safe inputs for the generator.
 
 - **`templates/`**: Jinja2 SVG templates with autoescape enabled.
@@ -67,6 +82,8 @@ Note: `badge_name` must always end with `.svg`. The `--style` option accepts `FL
 ### Public API (`from badgeshield import ...`)
 
 `BadgeGenerator`, `BadgeBatchGenerator`, `BadgeColor`, `BadgeTemplate`, `BadgeStyle`, `FrameType`, `LogLevel`, `parse_coverage_xml`, `coverage_color`
+
+The `PRESETS` dict and all `sources.*` functions are internal; import them directly from `badgeshield.presets` / `badgeshield.sources` if needed.
 
 ### Batch JSON config format
 

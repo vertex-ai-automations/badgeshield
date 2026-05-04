@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import warnings
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -31,7 +32,16 @@ def _read_toml(path: Path) -> dict:
         try:
             import tomllib  # type: ignore[import]
         except ImportError:
-            import tomli as tomllib  # type: ignore[import,no-redef]
+            try:
+                import tomli as tomllib  # type: ignore[import,no-redef]
+            except ImportError:
+                warnings.warn(
+                    "tomli is not installed and tomllib (Python 3.11+) is unavailable. "
+                    "Install tomli (`pip install tomli`) to read pyproject.toml on Python < 3.11. "
+                    "Preset values sourced from pyproject.toml will fall back to 'unknown'.",
+                    stacklevel=3,
+                )
+                return {}
         with path.open("rb") as fh:
             return tomllib.load(fh)
     except Exception:

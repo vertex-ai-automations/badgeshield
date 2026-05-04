@@ -7,7 +7,7 @@ from typer.testing import CliRunner
 from badgeshield.coverage import coverage_color, parse_coverage_xml
 from badgeshield.generate_badge_cli import app
 
-runner = CliRunner(mix_stderr=False)
+runner = CliRunner()
 
 
 def test_parse_invalid_metric(tmp_path):
