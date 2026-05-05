@@ -26,19 +26,18 @@
 #      Settings → Environments → New environment
 #        - "github-pages" (docs deployment)
 #        - "pypi"         (real PyPI — add Required reviewers for safety)
+#        - "test-pypi"    (TestPyPI sandbox — no reviewers needed)
 #
 #   3. Register Trusted Publisher on pypi.org:
 #      pypi.org → your project → Publishing → Add publisher
 #        owner    = vertex-ai-automations
 #        repo     = badgeshield
-#        workflow = release.yml
+#        workflow = python-publish.yml
 #        env      = pypi
-#
-#      NOTE: The publish job must be INLINE (not a reusable/called workflow)
-#      because PyPI OIDC Trusted Publishing does not support reusable workflows.
-#      See: https://docs.pypi.org/trusted-publishers/troubleshooting/
+#        (register against the shared workflow, not release.yml)
 #
 # SECRETS: none required — uses GitHub OIDC (id-token: write).
+#   Set TEST_PYPI_API_TOKEN to enable TestPyPI validation stage.
 # ==============================================================================
 
 name: 🚢 Release
@@ -59,84 +58,31 @@ jobs:
   # ============================================================
   docs:
     name: 📚 Deploy Docs
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    uses: vertex-ai-automations/shared-workflows/.github/workflows/publish-zensical.yml@main
     permissions:
       contents: read
       pages: write
       id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install package and docs dependencies
-        run: pip install -e . -r docs/requirements.txt
-      - name: Build docs
-        run: zensical build
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public/
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    with:
+      python-version: "3.11"
+      docs-requirements: "docs/requirements.txt"
+      src-layout: true
+    secrets: inherit
 
   # ============================================================
-  # 📦 Build, test, and publish to PyPI
+  # 📦 Build and publish to PyPI
   # Runs on: tag push only (X.X.X bare SemVer, no v-prefix)
-  #
-  # Inline job — NOT a reusable workflow — required for PyPI
-  # OIDC Trusted Publishing to work correctly.
   # ============================================================
   publish:
     name: 📦 Publish Package
-    if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/badgeshield/
+    uses: vertex-ai-automations/shared-workflows/.github/workflows/python-publish.yml@main
     permissions:
       contents: read
       id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # full history so setuptools_scm resolves the tag
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Validate tag matches SemVer X.X.X
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          python -c "
-          import re, sys
-          tag = '$TAG'
-          if tag.startswith('v'):
-              print(f'ERROR: tag {tag!r} must not start with v — use bare SemVer')
-              sys.exit(1)
-          if not re.fullmatch(r'\d+\.\d+\.\d+', tag):
-              print(f'ERROR: tag {tag!r} does not match X.X.X')
-              sys.exit(1)
-          print(f'Tag {tag!r} is valid')
-          "
-
-      - name: Install package + test dependencies
-        run: pip install -e ".[test]"
-
-      - name: Run tests
-        run: pytest tests/ -v --tb=short
-
-      - name: Build package
-        run: |
-          pip install build
-          python -m build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
+    with:
+      python-version: "3.11"
+      run-tests: true
+      test-command: "pytest tests/ -v --tb=short"
+      publish-target: "pypi"
+      use-trusted-publishing: true
+    secrets: inherit
