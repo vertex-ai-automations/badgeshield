@@ -72,6 +72,9 @@ ipython_config.py
 # mkdocs documentation
 /site
 
+# Zensical documentation build output
+/public
+
 # Model saving / checkpointing
 *.pt
 *.pth

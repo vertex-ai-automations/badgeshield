@@ -25,7 +25,7 @@ app = typer.Typer(
     help=(
         "Generate customizable SVG badges — entirely offline, no network calls.\n\n"
         "Quick start: run 'badgeshield presets' to list all named presets, then\n"
-        "'badgeshield preset --all --output_path ./badges/' to generate them all."
+        "'badgeshield preset --all --output-path ./badges/' to generate them all."
     ),
     add_completion=False,
 )
@@ -572,6 +572,9 @@ def preset_cmd(
             right_text = get_lines_of_code(sp, extensions=ext_tuple)
         except Exception as exc:
             _error(str(exc))
+            raise typer.Exit(1)
+        if right_text == "0":
+            _error("No source files matched — 'lines' preset resolved to 0.")
             raise typer.Exit(1)
     elif name == "tests":
         if junit is None:

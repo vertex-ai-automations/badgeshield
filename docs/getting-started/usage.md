@@ -25,7 +25,7 @@ The file is written to the current working directory by default. Use `output_pat
 |-----------|------|---------|-------------|
 | `template` | `BadgeTemplate` | `DEFAULT` | `DEFAULT`, `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER` |
 | `style` | `BadgeStyle` | `FLAT` | `FLAT`, `ROUNDED`, `GRADIENT`, or `SHADOWED` — applies to every badge this instance generates |
-| `log_level` | `LogLevel` or `str` | `INFO` | Logging verbosity |
+| `log_level` | `LogLevel` or `str` | `WARNING` | Logging verbosity |
 
 ### `generate_badge()`
 

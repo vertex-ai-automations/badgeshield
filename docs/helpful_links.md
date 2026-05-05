@@ -27,8 +27,7 @@
 - [pytest](https://docs.pytest.org/) — test runner; JUnit XML output supported by `badgeshield preset tests`
 - [setuptools-scm](https://setuptools-scm.readthedocs.io/) — version tagging from git used by badgeshield internally
 
-## MkDocs
+## Documentation
 
-- [MkDocs](https://www.mkdocs.org/) — static site generator used for this documentation
-- [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) — theme powering the docs site
+- [Zensical](https://zensical.org/) — static site generator used for this documentation
 - [mkdocstrings](https://mkdocstrings.github.io/) — auto-generates API reference from docstrings

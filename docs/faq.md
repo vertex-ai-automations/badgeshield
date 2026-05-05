@@ -88,13 +88,13 @@ color = coverage_color(pct)               # str, e.g. "#44cc11"
 
 ### Do I use underscores or hyphens in CLI flags?
 
-It depends on the subcommand. The `single` command uses explicit underscore flags for its four core arguments — this is intentional to preserve backwards compatibility:
+All flags use hyphens. There are no underscore flags — every subcommand (`single`, `batch`, `coverage`, `preset`, `audit`) uses the hyphenated form consistently:
 
 ```bash
-badgeshield single --left_text "build" --left_color GREEN --badge_name build.svg --output_path ./badges
+badgeshield single --left-text "build" --left-color GREEN --badge-name build.svg --output-path ./badges
 ```
 
-All other `single` flags (e.g. `--right-text`, `--logo-tint`, `--id-suffix`) use hyphens, as does every flag in the `batch`, `coverage`, and `audit` subcommands. When in doubt, run `badgeshield <subcommand> --help` to see the exact flag names.
+When in doubt, run `badgeshield <subcommand> --help` to see the exact flag names.
 
 ---
 

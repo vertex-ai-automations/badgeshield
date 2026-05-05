@@ -87,7 +87,7 @@ Notes:
 
 `BadgeGenerator`, `BadgeBatchGenerator`, `BadgeColor`, `BadgeTemplate`, `BadgeStyle`, `FrameType`, `LogLevel`, `parse_coverage_xml`, `coverage_color`
 
-The `PRESETS` dict and all `sources.*` functions are internal; import them directly from `badgeshield.presets` / `badgeshield.sources` if needed.
+`PRESETS` and `Preset` are exported from the public API. `sources.*` functions are internal helpers; import directly from `badgeshield.sources` if needed.
 
 ### Batch JSON config format
 

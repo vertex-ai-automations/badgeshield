@@ -31,13 +31,20 @@ Without Pillow, badges are still generated correctly — logos are embedded as-i
 
 ## Development install
 
-Clone the repository and install in editable mode:
+Clone the repository and install in editable mode with test dependencies:
 
 ```bash
 git clone https://github.com/vertex-ai-automations/badgeshield.git
 cd badgeshield
-pip install -e ".[image]"
-pip install -r requirements.txt
+pip install -e ".[dev]"          # runtime + pytest suite
+pip install -e ".[dev,image]"    # also add Pillow for accurate text sizing
+```
+
+To work on the documentation:
+
+```bash
+pip install -e ".[docs]"         # zensical + mkdocstrings
+zensical serve                   # preview at localhost:8000
 ```
 
 ## Verify the installation

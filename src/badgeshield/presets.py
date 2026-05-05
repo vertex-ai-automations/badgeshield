@@ -70,7 +70,7 @@ PRESETS: Dict[str, Preset] = {
     ),
     "coverage": Preset(
         label="coverage", color=BadgeColor.GREEN, source=None,
-        description="Line coverage percentage from coverage.xml (requires --coverage_xml flag)",
+        description="Line coverage percentage from coverage.xml (requires --coverage-xml flag)",
     ),
     # --- Code quality ---
     "black": Preset(label="code style", color=BadgeColor.BLACK, right_text="black",

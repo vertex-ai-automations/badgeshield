@@ -11,7 +11,7 @@ authors = [
 readme = "README.md"
 
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -24,7 +24,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 requires-python = ">=3.8"
-keywords = ["gitlab", "badges", "custom", "design"]
+keywords = ["badges", "svg", "ci", "shields", "badge-generator"]
 
 dynamic = ["version", "dependencies"]
 

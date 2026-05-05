@@ -77,7 +77,7 @@ shields.io is great — but it makes an HTTP call to an external server on every
 
 ```bash
 # Generate every standard badge for your Python project in one command
-badgeshield preset --all --output_path ./badges/ --format markdown
+badgeshield preset --all --output-path ./badges/ --format markdown
 ```
 
 ---
@@ -103,13 +103,13 @@ badgeshield preset --all --output_path ./badges/ --format markdown
 
     ```bash
     badgeshield single \
-      --left_text "coverage" \
-      --left_color "#555555" \
+      --left-text "coverage" \
+      --left-color "#555555" \
       --right-text "94%" \
       --right-color "#44cc11" \
       --style gradient \
-      --badge_name coverage.svg \
-      --output_path ./badges
+      --badge-name coverage.svg \
+      --output-path ./badges
     ```
 
 === "CLI — batch"

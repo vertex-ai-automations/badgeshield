@@ -25,9 +25,8 @@
 #        git push origin 1.2.1
 #   3. The publish job runs: validate → test → build → testpypi → pypi
 #
-# SECRETS REQUIRED (Settings → Secrets and variables → Actions):
-#   TEST_PYPI_API_TOKEN  — from test.pypi.org/manage/account/token/
-#   PYPI_API_TOKEN       — from pypi.org (only if not using Trusted Publishing)
+# SECRETS: not required — OIDC trusted publishing is enabled (use-trusted-publishing: true).
+#   Set PYPI_API_TOKEN only if you switch use-trusted-publishing to false.
 #
 # PRE-REQUISITES (once per project):
 #

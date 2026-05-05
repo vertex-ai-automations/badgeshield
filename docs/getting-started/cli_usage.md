@@ -83,10 +83,10 @@ badgeshield single --help
 
 | Flag | Required | Description |
 |------|:--------:|-------------|
-| `--left_text` | ✅ | Text on the left segment |
-| `--left_color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
-| `--badge_name` | ✅ | Output SVG filename — must end with `.svg` |
-| `--output_path` | | Output directory; defaults to CWD |
+| `--left-text` | ✅ | Text on the left segment |
+| `--left-color` | ✅ | Hex `#RRGGBB` or `BadgeColor` name (e.g. `GREEN`) |
+| `--badge-name` | ✅ | Output SVG filename — must end with `.svg` |
+| `--output-path` | | Output directory; defaults to CWD |
 | `--template` | | `DEFAULT` (default), `PILL`, `CIRCLE`, `CIRCLE_FRAME`, or `BANNER` |
 | `--style` | | `FLAT` (default), `ROUNDED`, `GRADIENT`, or `SHADOWED` |
 | `--right-text` | | Text on the right segment |
@@ -108,87 +108,87 @@ badgeshield single --help
 
 ```bash
 badgeshield single \
-  --left_text "flake8" \
-  --left_color "#4b0082" \
-  --badge_name flake8.svg
+  --left-text "flake8" \
+  --left-color "#4b0082" \
+  --badge-name flake8.svg
 ```
 
 **Two-part badge:**
 
 ```bash
 badgeshield single \
-  --left_text "coverage" \
-  --left_color "#555555" \
+  --left-text "coverage" \
+  --left-color "#555555" \
   --right-text "94%" \
   --right-color "#44cc11" \
-  --badge_name coverage.svg \
-  --output_path ./badges
+  --badge-name coverage.svg \
+  --output-path ./badges
 ```
 
 **With logo:**
 
 ```bash
 badgeshield single \
-  --left_text "python" \
-  --left_color "#3776ab" \
+  --left-text "python" \
+  --left-color "#3776ab" \
   --logo path/to/python.png \
   --logo-tint "#ffffff" \
-  --badge_name python.svg \
-  --output_path ./badges
+  --badge-name python.svg \
+  --output-path ./badges
 ```
 
 **Pill template with gradient style:**
 
 ```bash
 badgeshield single \
-  --left_text "build" \
-  --left_color "#555555" \
+  --left-text "build" \
+  --left-color "#555555" \
   --right-text "passing" \
   --right-color "#44cc11" \
   --template PILL \
   --style gradient \
-  --badge_name build-pill.svg \
-  --output_path ./badges
+  --badge-name build-pill.svg \
+  --output-path ./badges
 ```
 
 **Circle frame template:**
 
 ```bash
 badgeshield single \
-  --left_text "MH" \
-  --left_color "#673ab7" \
+  --left-text "MH" \
+  --left-color "#673ab7" \
   --template CIRCLE_FRAME \
   --frame FRAME1 \
-  --badge_name initials.svg \
-  --output_path ./badges
+  --badge-name initials.svg \
+  --output-path ./badges
 ```
 
 **Banner template:**
 
 ```bash
 badgeshield single \
-  --left_text "badgeshield" \
-  --left_color "#1a1a2e" \
+  --left-text "badgeshield" \
+  --left-color "#1a1a2e" \
   --right-text "v1.0" \
   --right-color "#16213e" \
   --template BANNER \
-  --badge_name banner.svg \
-  --output_path ./badges
+  --badge-name banner.svg \
+  --output-path ./badges
 ```
 
 **With links and titles (accessibility):**
 
 ```bash
 badgeshield single \
-  --left_text "build" \
-  --left_color "#555" \
+  --left-text "build" \
+  --left-color "#555" \
   --right-text "passing" \
   --right-color "#44cc11" \
   --left-link "https://example.com/pipeline" \
   --right-link "https://example.com/results" \
   --left-title "Pipeline status" \
   --right-title "Test result" \
-  --badge_name build.svg
+  --badge-name build.svg
 ```
 
 ---
@@ -336,18 +336,18 @@ badgeshield presets
 
 ```bash
 # Cosmetic preset — value is fixed
-badgeshield preset passing --output_path ./badges/
+badgeshield preset passing --output-path ./badges/
 
 # Data-wired preset — value resolved from local repo
-badgeshield preset version --output_path ./badges/
-badgeshield preset lines --extensions .py --extensions .js --output_path ./badges/
-badgeshield preset tests --junit tests/junit.xml --output_path ./badges/
+badgeshield preset version --output-path ./badges/
+badgeshield preset lines --extensions .py --extensions .js --output-path ./badges/
+badgeshield preset tests --junit tests/junit.xml --output-path ./badges/
 ```
 
 ### Generate all presets at once
 
 ```bash
-badgeshield preset --all --output_path ./badges/ --format markdown
+badgeshield preset --all --output-path ./badges/ --format markdown
 ```
 
 ### Embed snippets
