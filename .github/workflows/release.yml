@@ -28,16 +28,14 @@
 #        - "pypi"         (real PyPI — add Required reviewers for safety)
 #        - "test-pypi"    (TestPyPI sandbox — no reviewers needed)
 #
-#   3. Register Trusted Publisher on pypi.org:
-#      pypi.org → your project → Publishing → Add publisher
-#        owner    = vertex-ai-automations
-#        repo     = badgeshield
-#        workflow = python-publish.yml
-#        env      = pypi
-#        (register against the shared workflow, not release.yml)
+#   3. Create GitHub Secrets (Settings → Secrets and variables → Actions):
+#        PYPI_API_TOKEN      — from pypi.org/manage/account/token/
+#        TEST_PYPI_API_TOKEN — from test.pypi.org (optional, for 'both' target)
 #
-# SECRETS: none required — uses GitHub OIDC (id-token: write).
-#   Set TEST_PYPI_API_TOKEN to enable TestPyPI validation stage.
+#      NOTE: PyPI OIDC Trusted Publishing is NOT used here because the shared
+#      python-publish.yml is a reusable workflow, and PyPI's Trusted Publishing
+#      does not support reusable workflows. API token is the correct approach.
+#      See: https://docs.pypi.org/trusted-publishers/troubleshooting/#reusable-workflows
 # ==============================================================================
 
 name: 🚢 Release
@@ -84,5 +82,5 @@ jobs:
       run-tests: true
       test-command: "pytest tests/ -v --tb=short"
       publish-target: "pypi"
-      use-trusted-publishing: true
+      use-trusted-publishing: false
     secrets: inherit
