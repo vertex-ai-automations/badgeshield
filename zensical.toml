@@ -1,0 +1,203 @@
+# =============================================================================
+# BadgeShield Documentation — Zensical Configuration
+# https://zensical.org/docs/
+# =============================================================================
+
+[project]
+site_name        = "BadgeShield"
+site_description = "A Python package for generating beautiful, customizable SVG badges — with a CLI, batch processing, and Pillow-powered font metrics."
+site_author      = "Vertex AI Automations"
+site_url         = "https://vertex-ai-automations.github.io/badgeshield"
+site_dir         = "public"
+repo_name        = "vertex-ai-automations/badgeshield"
+repo_url         = "https://github.com/vertex-ai-automations/badgeshield"
+edit_uri         = "edit/main/docs"
+copyright        = "Copyright &copy; 2024-2026 Vertex AI Automations"
+extra_css        = ["css/extra.css"]
+extra_javascript = ["js/extra.js"]
+
+nav = [
+  {"📄 Home"            = [{"Overview" = "index.md"}, {"Installation" = "installation.md"}]},
+  {"🚀 Getting Started" = [{"Python API" = "getting-started/usage.md"}, {"CLI Usage" = "getting-started/cli_usage.md"}]},
+  {"🔧 API Reference"   = [{"Generator & Batch" = "reference/batch_generator.md"}, {"Coverage" = "reference/coverage.md"}, {"CLI Module" = "reference/batch_generator_cli.md"}, {"Utilities" = "reference/utils.md"}, {"Sources" = "reference/sources.md"}, {"Presets" = "reference/presets.md"}]},
+  {"🔗 Helpful Links"   = "helpful_links.md"},
+  {"❓ FAQ"              = "faq.md"},
+]
+
+# ── Theme ─────────────────────────────────────────────────────────────────────
+[project.theme]
+language   = "en"
+variant    = "classic"   # preserves the Material for MkDocs look and feel
+custom_dir = "docs/overrides"
+logo       = "img/badgeshield_192x192.png"
+favicon    = "img/favicon/favicon.ico"
+features   = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.action.view",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.tabs.link",
+  "content.tooltips",
+  "header.autohide",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.instant.progress",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "search.share",
+  "search.suggest",
+  "toc.follow",
+]
+
+[project.theme.font]
+text = "DM Sans"
+code = "Fira Code"
+
+[project.theme.icon]
+logo = "material/shield-lock"
+repo = "fontawesome/brands/github"
+edit = "material/pencil"
+view = "material/eye"
+
+[[project.theme.palette]]
+media       = "(prefers-color-scheme: light)"
+scheme      = "default"
+primary     = "deep purple"
+accent      = "amber"
+toggle.icon = "material/brightness-7"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media       = "(prefers-color-scheme: dark)"
+scheme      = "slate"
+primary     = "deep purple"
+accent      = "amber"
+toggle.icon = "material/brightness-4"
+toggle.name = "Switch to light mode"
+
+# ── Extra ─────────────────────────────────────────────────────────────────────
+[project.extra]
+generator = false
+
+[project.extra.analytics]
+provider = "google"
+property = "G-XXXXXXXXXX"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/vertex-ai-automations/badgeshield"
+name = "BadgeShield on GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/badgeshield/"
+name = "BadgeShield on PyPI"
+
+[[project.extra.social]]
+icon = "material/web"
+link = "https://www.vertexaiautomations.com"
+name = "Vertex AI Automations"
+
+# ── Plugins ───────────────────────────────────────────────────────────────────
+# Note: git-authors and git-revision-date-localized are not yet supported in
+# Zensical (Alpha). Remove or re-add once Zensical modules ship for them.
+[project.plugins.search]
+separator = '[\\s\\u200b\\-_,:!=\\[\\]()"`/]+|\\.(?!\\d)|&[lg]t;|(?!\\b)(?=[A-Z][a-z])'
+
+[project.plugins.mkdocstrings]
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style            = "numpy"
+docstring_section_style    = "spacy"
+filters                    = ["!^_"]
+heading_level              = 2
+inherited_members          = false
+merge_init_into_class      = true
+parameter_headings         = true
+show_root_heading          = true
+show_root_full_path        = false
+show_signature             = true
+show_signature_annotations = true
+show_source                = true
+show_symbol_type_heading   = true
+show_symbol_type_toc       = true
+signature_crossrefs        = true
+summary                    = true
+members_order              = "source"
+
+[project.plugins.mkdocstrings.handlers.python.options.docstring_options]
+ignore_init_summary = true
+
+# ── Markdown extensions ───────────────────────────────────────────────────────
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+
+[project.markdown_extensions.toc]
+permalink       = true
+permalink_title = "Link to this section"
+toc_depth       = 3
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
+
+[project.markdown_extensions.pymdownx.betterem]
+smart_enable = "all"
+
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+
+[project.markdown_extensions.pymdownx.emoji]
+emoji_generator = "zensical.extensions.emoji.to_svg"
+emoji_index     = "zensical.extensions.emoji.twemoji"
+
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums     = true
+line_spans          = "__span"
+pygments_lang_class = true
+auto_title          = true
+
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.keys]
+
+[project.markdown_extensions.pymdownx.magiclink]
+normalize_issue_symbols = true
+repo_url_shorthand      = true
+user                    = "vertex-ai-automations"
+repo                    = "badgeshield"
+
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.smartsymbols]
+
+[project.markdown_extensions.pymdownx.snippets]
+base_path = ["docs/includes"]
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style     = true
+combine_header_slug = true
+slugify             = { object = "pymdownx.slugs.slugify", kwds = { case = "lower" } }
+
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+
+[project.markdown_extensions.pymdownx.tilde]

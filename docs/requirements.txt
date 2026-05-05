@@ -1,2 +1,2 @@
-mkdocs-material>=9.5
+zensical>=0.0.39
 mkdocstrings[python]>=0.24

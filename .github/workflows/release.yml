@@ -36,8 +36,9 @@
 #
 #   2. Create GitHub Environments:
 #      Settings → Environments → New environment
-#        - "pypi"      (real PyPI — add Required reviewers for safety)
-#        - "test-pypi" (TestPyPI sandbox — no reviewers needed)
+#        - "github-pages" (docs deployment)
+#        - "pypi"         (real PyPI — add Required reviewers for safety)
+#        - "test-pypi"    (TestPyPI sandbox — no reviewers needed)
 #
 #   3. Register Trusted Publisher on pypi.org:
 #      pypi.org → your project → Publishing → Add publisher
@@ -46,16 +47,10 @@
 #        workflow = release.yml
 #        env      = pypi
 #
-#   4. Create docs/requirements.txt:
-#        mkdocs-material==9.5.18
-#        mkdocstrings[python]==0.24.3
-#
 # CUSTOMISE PER PROJECT:
 #   python-version   — match your project's Python version
 #   test-command     — your test runner command
 #   publish-target   — 'both' | 'pypi' | 'testpypi'
-#   src-layout       — true if you use a src/ directory layout
-#   mkdocs-strict    — false to allow doc build warnings
 # ==============================================================================
 
 name: 🚢 Release
@@ -71,22 +66,36 @@ on:
 jobs:
 
   # ============================================================
-  # 📚 Deploy MkDocs to GitHub Pages
+  # 📚 Build and deploy Zensical docs to GitHub Pages
   # Runs on: push to main, manual dispatch
   # ============================================================
   docs:
     name: 📚 Deploy Docs
-    uses: vertex-ai-automations/shared-workflows/.github/workflows/publish-mkdocs.yml@main
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       contents: read
       pages: write
       id-token: write
-    with:
-      python-version: "3.11"
-      docs-requirements: "docs/requirements.txt"
-      src-layout: true       # ← set false if not using src/ layout
-      mkdocs-strict: true    # ← set false to allow doc build warnings
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and docs dependencies
+        run: pip install -e . -r docs/requirements.txt
+      - name: Build docs
+        run: zensical build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   # ============================================================
   # 📦 Build and Publish Package

@@ -21,9 +21,12 @@ UPDATE_SNAPSHOTS=1 pytest tests/ -v
 
 ### Documentation
 ```bash
-mkdocs build    # Build docs
-mkdocs serve    # Serve docs locally
+zensical build              # Build docs (output: public/)
+zensical serve              # Serve docs locally at localhost:8000
+zensical serve --open       # Serve and open browser automatically
 ```
+
+Config file: `zensical.toml`. Docs dependencies: `pip install -e ".[docs]"` or `pip install -r docs/requirements.txt`.
 
 ### Install for development
 ```bash
