@@ -18,7 +18,7 @@ Five templates are included:
 
 ### Can I use custom colors?
 
-Yes. Pass any six-digit hex string (`#RRGGBB`) for `left_color`, `right_color`, or `logo_tint`. You can also use any of the 51 built-in `BadgeColor` enum names (e.g. `GREEN`, `DARK_PURPLE`, `NEON_CYAN`). See [Utilities](reference/utils.md) for the full color list.
+Yes. Pass any six-digit hex string (`#RRGGBB`) for `left_color`, `right_color`, or `logo_tint`. You can also use any of the 51 built-in `BadgeColor` enum names (e.g. `GREEN`, `DARK_PURPLE`, `NEON_CYAN`). See [Utilities](../reference/utils/) for the full color list.
 
 ---
 

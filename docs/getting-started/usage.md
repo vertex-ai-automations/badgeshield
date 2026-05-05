@@ -176,7 +176,7 @@ generator.generate_badge(left_color="#4caf50", ...)
 generator.generate_badge(left_color="DARK_GREEN", ...)
 ```
 
-51 colors are available across standard, light, dark, pastel, and neon families. See [Utilities](../reference/utils.md) for the full list.
+51 colors are available across standard, light, dark, pastel, and neon families. See [Utilities](../../reference/utils/) for the full list.
 
 ## Logo tinting
 

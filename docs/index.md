@@ -135,4 +135,4 @@ badgeshield preset --all --output_path ./badges/ --format markdown
 
 ---
 
-📖 Continue to [Installation](installation.md) or jump to the [Python API guide](getting-started/usage.md).
+📖 Continue to [Installation](installation.md) or jump to the [Python API guide](getting-started/usage/).
