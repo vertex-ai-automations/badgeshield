@@ -75,6 +75,9 @@ ipython_config.py
 # Zensical documentation build output
 /public
 
+# setuptools_scm auto-generated version file — never commit
+src/badgeshield/_version.py
+
 # Model saving / checkpointing
 *.pt
 *.pth

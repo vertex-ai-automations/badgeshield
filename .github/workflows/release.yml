@@ -118,7 +118,7 @@ jobs:
       python-version: "3.11"
       run-tests: true
       test-command: "pytest tests/ -v --tb=short"
-      publish-target: "both"           # 'both' | 'pypi' | 'testpypi'
+      publish-target: "pypi"            # 'both' | 'pypi' | 'testpypi'
       use-trusted-publishing: true     # uses GitHub OIDC — no long-lived token needed
     secrets: inherit
 
