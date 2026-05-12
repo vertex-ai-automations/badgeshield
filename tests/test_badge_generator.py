@@ -712,3 +712,29 @@ class TestLightenHex:
                 )
             expected = snapshot_path.read_text(encoding="utf-8").strip()
             assert result == expected
+
+
+def test_pill_right_color_falls_back_to_left_color(tmp_path):
+    """When right_color is omitted, PILL must fall back to left_color, not hardcoded green."""
+    gen = BadgeGenerator(template=BadgeTemplate.PILL)
+    gen.generate_badge(
+        left_text="build",
+        left_color="#abcdef",
+        right_text="passing",
+        badge_name="pill.svg",
+        output_path=str(tmp_path),
+    )
+    assert gen._last_render_context["right_color"] == "#abcdef"
+
+
+def test_banner_right_color_falls_back_to_left_color(tmp_path):
+    """When right_color is omitted, BANNER must fall back to left_color, not hardcoded gray."""
+    gen = BadgeGenerator(template=BadgeTemplate.BANNER)
+    gen.generate_badge(
+        left_text="badgeshield",
+        left_color="#1a1a2e",
+        right_text="v1.0",
+        badge_name="banner.svg",
+        output_path=str(tmp_path),
+    )
+    assert gen._last_render_context["right_color"] == "#1a1a2e"
