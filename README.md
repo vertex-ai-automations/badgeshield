@@ -9,7 +9,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/badgeshield?color=673ab7&logo=python&logoColor=white)](https://pypi.org/project/badgeshield/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-673ab7.svg)](https://github.com/vertex-ai-automations/badgeshield/blob/main/LICENSE.txt)
 [![Downloads](https://img.shields.io/pypi/dm/badgeshield?color=673ab7)](https://pypi.org/project/badgeshield/)
-[![CI](https://img.shields.io/github/actions/workflow/status/vertex-ai-automations/badgeshield/release.yml?branch=main&label=CI&logo=github)](https://github.com/vertex-ai-automations/badgeshield/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/vertex-ai-automations/badgeshield/ci.yml?branch=main&label=CI&logo=github)](https://github.com/vertex-ai-automations/badgeshield/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-online-673ab7?logo=readthedocs&logoColor=white)](https://vertex-ai-automations.github.io/badgeshield)
 
 <br/>
@@ -345,6 +345,20 @@ except RuntimeError:
 
 ---
 
+
+---
+
+## CI Pipeline
+
+Every push to `main` and every pull request runs automatically via [shared-workflows](https://github.com/vertex-ai-automations/shared-workflows):
+
+| Job | What it checks |
+|-----|----------------|
+| **Test** | pytest on Python 3.9–3.12 x Ubuntu + Windows |
+| **Lint** | `ruff check` + `ruff format --check` |
+| **Type Check** | `mypy src/` |
+| **Audit** | `pip-audit` — all dependencies scanned for known CVEs |
+| **Coverage** | `pytest-cov` — report posted to the Actions job summary |
 ## 👪 Contributing
 
 All contributions are welcome. Fork the repo, make your changes, and open a pull request. You can also open an issue with the label `enhancement`.
