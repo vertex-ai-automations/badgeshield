@@ -1015,6 +1015,12 @@ class BadgeGenerator:
             If the output_path is empty or invalid.
         TypeError:
             If frame is not an instance of FrameType.
+
+        Returns
+        -------
+        str:
+            The absolute path of the written SVG file, equivalent to
+            ``str(Path(output_path) / badge_name)``.
         """
         left_color_value, right_color_value, output_path, frame = self.validate_inputs(
             left_text,
