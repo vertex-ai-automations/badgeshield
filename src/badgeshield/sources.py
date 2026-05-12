@@ -1,4 +1,5 @@
 """Local project metadata extraction helpers."""
+
 from __future__ import annotations
 
 import re
@@ -25,6 +26,7 @@ _EXCLUDED_DIRS = {
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
+
 
 def _read_toml(path: Path) -> dict:
     """Parse a TOML file, returning {} on any failure."""
@@ -85,6 +87,7 @@ def _run_git(args: list, cwd: Path) -> str:
 # ---------------------------------------------------------------------------
 # Public functions
 # ---------------------------------------------------------------------------
+
 
 def get_version(search_path: Path = Path(".")) -> str:
     """
@@ -224,6 +227,7 @@ def get_git_commit_count(search_path: Path = Path(".")) -> str:
 def _os_walk(path: Path):
     """Fallback os.walk wrapper for Path.walk() which requires Python 3.12."""
     import os
+
     for root, dirs, files in os.walk(str(path)):
         yield root, dirs, files
 
@@ -238,7 +242,7 @@ def get_lines_of_code(
     Excludes directories in _EXCLUDED_DIRS and any directory ending with .egg-info.
     """
     search_path = Path(search_path)
-    total = 0
+    total = 0  # type: ignore[attr-defined]
 
     # Use Path.walk() on Python 3.12+, fall back to os.walk otherwise
     try:
@@ -249,7 +253,11 @@ def get_lines_of_code(
     for root, dirs, files in walker:
         root = Path(root)
         # str(d) works for both Path objects (3.12 walk) and str names (os.walk)
-        dirs[:] = [d for d in dirs if str(d) not in _EXCLUDED_DIRS and not str(d).endswith(".egg-info")]
+        dirs[:] = [
+            d
+            for d in dirs
+            if str(d) not in _EXCLUDED_DIRS and not str(d).endswith(".egg-info")
+        ]
         for fname in files:
             if any(str(fname).endswith(ext) for ext in extensions):
                 try:

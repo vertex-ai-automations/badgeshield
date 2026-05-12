@@ -18,63 +18,101 @@ class TestCLICommands:
 
     def test_single_happy_path(self, tmp_path):
         """Single badge generation with valid args should create the SVG file."""
-        result = self.runner.invoke(app, [
-            "single",
-            "--left-text", "Build",
-            "--left-color", "GREEN",
-            "--badge-name", "build.svg",
-            "--output-path", str(tmp_path),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "build.svg",
+                "--output-path",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert (tmp_path / "build.svg").exists()
 
     def test_single_invalid_color(self, tmp_path):
         """An unrecognised color name should print an Error panel and exit 1."""
-        result = self.runner.invoke(app, [
-            "single",
-            "--left-text", "Build",
-            "--left-color", "NOTACOLOR",
-            "--badge-name", "build.svg",
-            "--output-path", str(tmp_path),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "NOTACOLOR",
+                "--badge-name",
+                "build.svg",
+                "--output-path",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code == 1
         assert "Error" in result.output
 
     def test_single_missing_svg_suffix(self, tmp_path):
         """badge-name without .svg suffix must exit 1."""
-        result = self.runner.invoke(app, [
-            "single",
-            "--left-text", "Build",
-            "--left-color", "GREEN",
-            "--badge-name", "no_suffix",
-            "--output-path", str(tmp_path),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "no_suffix",
+                "--output-path",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code == 1
 
     def test_single_invalid_template(self, tmp_path):
         """An invalid template name must exit 1."""
-        result = self.runner.invoke(app, [
-            "single",
-            "--left-text", "Build",
-            "--left-color", "GREEN",
-            "--badge-name", "build.svg",
-            "--template", "BOGUS",
-            "--output-path", str(tmp_path),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "build.svg",
+                "--template",
+                "BOGUS",
+                "--output-path",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code == 1
         assert "Error" in result.output
 
     def test_single_invalid_frame(self, tmp_path):
         """An invalid frame name must exit 1."""
-        result = self.runner.invoke(app, [
-            "single",
-            "--left-text", "Build",
-            "--left-color", "GREEN",
-            "--badge-name", "build.svg",
-            "--template", "CIRCLE_FRAME",
-            "--frame", "BADFRAME",
-            "--output-path", str(tmp_path),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "single",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "build.svg",
+                "--template",
+                "CIRCLE_FRAME",
+                "--frame",
+                "BADFRAME",
+                "--output-path",
+                str(tmp_path),
+            ],
+        )
         assert result.exit_code == 1
         assert "Error" in result.output
 
@@ -93,11 +131,15 @@ class TestCLICommands:
         out_dir = tmp_path / "out"
         out_dir.mkdir()
 
-        result = self.runner.invoke(app, [
-            "batch",
-            str(config_file),
-            "--output-path", str(out_dir),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "batch",
+                str(config_file),
+                "--output-path",
+                str(out_dir),
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert (out_dir / "a.svg").exists()
         assert (out_dir / "b.svg").exists()
@@ -107,19 +149,25 @@ class TestCLICommands:
         config_file = tmp_path / "bad.json"
         config_file.write_text("{broken")
 
-        result = self.runner.invoke(app, [
-            "batch",
-            str(config_file),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "batch",
+                str(config_file),
+            ],
+        )
         assert result.exit_code == 1
         assert "Error" in result.output
 
     def test_batch_missing_config_file(self, tmp_path):
         """Non-existent config file path must exit 1 (Typer exists=True)."""
-        result = self.runner.invoke(app, [
-            "batch",
-            str(tmp_path / "nonexistent.json"),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "batch",
+                str(tmp_path / "nonexistent.json"),
+            ],
+        )
         assert result.exit_code != 0
 
     def test_batch_circle_frame_without_frame(self, tmp_path):
@@ -132,12 +180,17 @@ class TestCLICommands:
         out_dir = tmp_path / "out"
         out_dir.mkdir()
 
-        result = self.runner.invoke(app, [
-            "batch",
-            str(config_file),
-            "--template", "CIRCLE_FRAME",
-            "--output-path", str(out_dir),
-        ])
+        result = self.runner.invoke(
+            app,
+            [
+                "batch",
+                str(config_file),
+                "--template",
+                "CIRCLE_FRAME",
+                "--output-path",
+                str(out_dir),
+            ],
+        )
         assert result.exit_code == 1
 
     def test_single_style_rounded(self, tmp_path):
@@ -145,11 +198,16 @@ class TestCLICommands:
             app,
             [
                 "single",
-                "--left-text", "Build",
-                "--left-color", "GREEN",
-                "--badge-name", "style_test.svg",
-                "--output-path", str(tmp_path),
-                "--style", "rounded",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "style_test.svg",
+                "--output-path",
+                str(tmp_path),
+                "--style",
+                "rounded",
             ],
         )
         assert result.exit_code == 0
@@ -161,11 +219,16 @@ class TestCLICommands:
             app,
             [
                 "single",
-                "--left-text", "Build",
-                "--left-color", "GREEN",
-                "--badge-name", "style_test.svg",
-                "--output-path", str(tmp_path),
-                "--style", "neon",
+                "--left-text",
+                "Build",
+                "--left-color",
+                "GREEN",
+                "--badge-name",
+                "style_test.svg",
+                "--output-path",
+                str(tmp_path),
+                "--style",
+                "neon",
             ],
         )
         assert result.exit_code == 1
@@ -221,10 +284,13 @@ class TestAuditCommand:
         """A clean SVG (no external URLs) exits 0."""
         from badgeshield import BadgeGenerator, BadgeTemplate
         from badgeshield.utils import BadgeColor
+
         gen = BadgeGenerator(template=BadgeTemplate.DEFAULT)
         gen.generate_badge(
-            left_text="build", left_color=BadgeColor.GREEN,
-            badge_name="clean.svg", output_path=str(tmp_path),
+            left_text="build",
+            left_color=BadgeColor.GREEN,
+            badge_name="clean.svg",
+            output_path=str(tmp_path),
         )
         result = self.runner.invoke(app, ["audit", str(tmp_path / "clean.svg")])
         assert result.exit_code == 0
@@ -235,7 +301,7 @@ class TestAuditCommand:
         dirty.write_text(
             '<svg xmlns="http://www.w3.org/2000/svg">'
             '<image href="https://cdn.example.com/img.png"/>'
-            '</svg>',
+            "</svg>",
             encoding="utf-8",
         )
         result = self.runner.invoke(app, ["audit", str(dirty)])
@@ -245,11 +311,12 @@ class TestAuditCommand:
     def test_audit_dirty_svg_json_output(self, tmp_path):
         """--json flag outputs machine-readable JSON."""
         import json as _json
+
         dirty = tmp_path / "dirty.svg"
         dirty.write_text(
             '<svg xmlns="http://www.w3.org/2000/svg">'
             '<image href="https://cdn.example.com/img.png"/>'
-            '</svg>',
+            "</svg>",
             encoding="utf-8",
         )
         result = self.runner.invoke(app, ["audit", str(dirty), "--json"])
@@ -280,8 +347,8 @@ class TestAuditCommand:
         svg = tmp_path / "style_url.svg"
         svg.write_text(
             '<svg xmlns="http://www.w3.org/2000/svg">'
-            '<rect style="fill:url(\'https://evil.com/grad\')"/>'
-            '</svg>',
+            "<rect style=\"fill:url('https://evil.com/grad')\"/>"
+            "</svg>",
             encoding="utf-8",
         )
         result = self.runner.invoke(app, ["audit", str(svg)])

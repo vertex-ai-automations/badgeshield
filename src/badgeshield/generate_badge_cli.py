@@ -15,7 +15,7 @@ from rich.table import Table
 from pylogshield import LogLevel
 
 from .badge_generator import BadgeBatchGenerator, BadgeGenerator
-from .utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
+from .utils import BadgeStyle, BadgeTemplate, FrameType
 from .coverage import coverage_color, parse_coverage_xml
 from .presets import PRESETS
 from .sources import get_test_results, get_coverage, get_lines_of_code
@@ -57,29 +57,50 @@ def single(
     badge_name: str = typer.Option(
         ..., "--badge-name", help="Output filename, must end with .svg"
     ),
-    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"),
+    template: str = typer.Option(
+        "DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"
+    ),
     output_path: Optional[str] = typer.Option(
         None, "--output-path", help="Output directory; defaults to current directory"
     ),
-    right_text: Optional[str] = typer.Option(None, help="Text for the right section (omit for label-only badge)"),
-    right_color: Optional[str] = typer.Option(None, help="Hex (#RRGGBB) or BadgeColor name for right section"),
-    logo: Optional[str] = typer.Option(None, help="Path to a logo image (embedded as base64)"),
+    right_text: Optional[str] = typer.Option(
+        None, help="Text for the right section (omit for label-only badge)"
+    ),
+    right_color: Optional[str] = typer.Option(
+        None, help="Hex (#RRGGBB) or BadgeColor name for right section"
+    ),
+    logo: Optional[str] = typer.Option(
+        None, help="Path to a logo image (embedded as base64)"
+    ),
     logo_tint: Optional[str] = typer.Option(
         None, help="Hex or BadgeColor name to tint the logo"
     ),
     frame: Optional[str] = typer.Option(
         None, help="Frame type (FRAME1–FRAME11) — required for CIRCLE_FRAME template"
     ),
-    left_link: Optional[str] = typer.Option(None, help="Hyperlink URL for the left section"),
-    right_link: Optional[str] = typer.Option(None, help="Hyperlink URL for the right section"),
-    id_suffix: str = typer.Option("", help="Suffix appended to SVG element IDs (useful when embedding multiple badges)"),
-    left_title: Optional[str] = typer.Option(None, help="SVG title tooltip for the left section"),
-    right_title: Optional[str] = typer.Option(None, help="SVG title tooltip for the right section"),
+    left_link: Optional[str] = typer.Option(
+        None, help="Hyperlink URL for the left section"
+    ),
+    right_link: Optional[str] = typer.Option(
+        None, help="Hyperlink URL for the right section"
+    ),
+    id_suffix: str = typer.Option(
+        "",
+        help="Suffix appended to SVG element IDs (useful when embedding multiple badges)",
+    ),
+    left_title: Optional[str] = typer.Option(
+        None, help="SVG title tooltip for the left section"
+    ),
+    right_title: Optional[str] = typer.Option(
+        None, help="SVG title tooltip for the right section"
+    ),
     log_level: str = typer.Option(
         "INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"
     ),
     style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
-    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"),
+    format: Optional[str] = typer.Option(
+        None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"
+    ),
 ) -> None:
     """Generate a single SVG badge."""
     try:
@@ -119,7 +140,9 @@ def single(
         raise typer.Exit(1)
 
     try:
-        generator = BadgeGenerator(template=template_enum, log_level=log_level_enum, style=style_enum)
+        generator = BadgeGenerator(
+            template=template_enum, log_level=log_level_enum, style=style_enum
+        )
         generator.generate_badge(
             left_text=left_text,
             left_color=left_color,
@@ -159,11 +182,22 @@ def batch(
     output_path: Optional[str] = typer.Option(
         None, help="Output directory; defaults to current directory"
     ),
-    template: str = typer.Option("DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"),
-    log_level: str = typer.Option("INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"),
+    template: str = typer.Option(
+        "DEFAULT", help="DEFAULT | CIRCLE | CIRCLE_FRAME | PILL | BANNER"
+    ),
+    log_level: str = typer.Option(
+        "INFO", help="DEBUG | INFO | WARNING | ERROR | CRITICAL"
+    ),
     max_workers: int = typer.Option(4, help="Parallel worker threads"),
-    style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED (per-entry 'style' key overrides this)"),
-    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet per badge to stdout: markdown | rst | html"),
+    style: str = typer.Option(
+        "flat",
+        help="FLAT | ROUNDED | GRADIENT | SHADOWED (per-entry 'style' key overrides this)",
+    ),
+    format: Optional[str] = typer.Option(
+        None,
+        "--format",
+        help="Print an embed snippet per badge to stdout: markdown | rst | html",
+    ),
 ) -> None:
     """Batch-generate SVG badges from a JSON config file.
 
@@ -214,9 +248,7 @@ def batch(
     # --- Validate each badge entry has badge_name ---
     for entry in badge_configs:
         if "badge_name" not in entry or not entry["badge_name"].endswith(".svg"):
-            _error(
-                "Each badge entry must include a 'badge_name' ending with '.svg'."
-            )
+            _error("Each badge entry must include a 'badge_name' ending with '.svg'.")
             raise typer.Exit(1)
 
     # --- Inject CLI-level template, output_path, and style ---
@@ -291,7 +323,11 @@ def batch(
         for badge in badge_configs:
             if badge["badge_name"] not in failure_map:
                 svg_path = str(Path(output_path or ".") / badge["badge_name"])
-                typer.echo(_format_snippet(svg_path, badge.get("left_text", badge["badge_name"]), fmt_lower))
+                typer.echo(
+                    _format_snippet(
+                        svg_path, badge.get("left_text", badge["badge_name"]), fmt_lower
+                    )
+                )
 
     if batch_gen._failures:
         raise typer.Exit(1)
@@ -300,18 +336,26 @@ def batch(
 @app.command()
 def coverage(
     input: Path = typer.Argument(..., help="Path to coverage.xml"),
-    badge_name: str = typer.Option(..., help="Output SVG filename (must end with .svg)"),
-    output_path: Optional[str] = typer.Option(None, help="Output directory; defaults to CWD"),
+    badge_name: str = typer.Option(
+        ..., help="Output SVG filename (must end with .svg)"
+    ),
+    output_path: Optional[str] = typer.Option(
+        None, help="Output directory; defaults to CWD"
+    ),
     metric: str = typer.Option("line", help="Coverage metric: 'line' or 'branch'"),
     left_text: str = typer.Option("coverage", help="Left segment label"),
     log_level: str = typer.Option("INFO", help="Logging verbosity"),
-    format: Optional[str] = typer.Option(None, "--format", help="Embed snippet format: markdown | rst | html"),
+    format: Optional[str] = typer.Option(
+        None, "--format", help="Embed snippet format: markdown | rst | html"
+    ),
 ) -> None:
     """Generate a coverage badge from a coverage.xml report."""
     try:
         log_level_enum = LogLevel[log_level.upper()]
     except KeyError:
-        _error(f"Invalid log_level '{log_level}'. Choose from: {', '.join(lv.name for lv in LogLevel)}")
+        _error(
+            f"Invalid log_level '{log_level}'. Choose from: {', '.join(lv.name for lv in LogLevel)}"
+        )
         raise typer.Exit(1)
 
     try:
@@ -351,7 +395,9 @@ def coverage(
 @app.command()
 def audit(
     svg_file: Path = typer.Argument(..., help="Path to SVG file to audit"),
-    json_output: bool = typer.Option(False, "--json", help="Output machine-readable JSON"),
+    json_output: bool = typer.Option(
+        False, "--json", help="Output machine-readable JSON"
+    ),
 ) -> None:
     """Audit an SVG file for external resource references.
 
@@ -377,26 +423,34 @@ def audit(
     for elem in root.iter():
         for attr_name, attr_value in elem.attrib.items():
             if attr_value.startswith("http://") or attr_value.startswith("https://"):
-                violations.append({
-                    "element": elem.tag,
-                    "attribute": attr_name,
-                    "url": attr_value,
-                })
+                violations.append(
+                    {
+                        "element": elem.tag,
+                        "attribute": attr_name,
+                        "url": attr_value,
+                    }
+                )
             if attr_name == "style":
                 for match in re.findall(
                     r'url\(["\']?(https?://[^"\')\s]+)', attr_value
                 ):
-                    violations.append({
-                        "element": elem.tag,
-                        "attribute": "style[url]",
-                        "url": match,
-                    })
+                    violations.append(
+                        {
+                            "element": elem.tag,
+                            "attribute": "style[url]",
+                            "url": match,
+                        }
+                    )
 
     if json_output:
-        typer.echo(json.dumps({"clean": len(violations) == 0, "violations": violations}))
+        typer.echo(
+            json.dumps({"clean": len(violations) == 0, "violations": violations})
+        )
     else:
         if not violations:
-            rprint("[green]\u2713 Clean \u2014 no external resource references found.[/green]")
+            rprint(
+                "[green]\u2713 Clean \u2014 no external resource references found.[/green]"
+            )
         else:
             table = Table(title="External URL Violations", show_lines=True)
             table.add_column("Element", style="cyan")
@@ -419,7 +473,11 @@ def presets_list() -> None:
     table.add_column("Type")
     table.add_column("Description")
     for name, preset in PRESETS.items():
-        kind = "data-wired" if (preset.source is not None or name in ("tests", "coverage")) else "cosmetic"
+        kind = (
+            "data-wired"
+            if (preset.source is not None or name in ("tests", "coverage"))
+            else "cosmetic"
+        )
         table.add_row(name, preset.label, kind, preset.description)
     rprint(table)
 
@@ -525,16 +583,38 @@ def _run_all_presets(
 
 @app.command(name="preset")
 def preset_cmd(
-    name: Optional[str] = typer.Argument(None, help="Preset name (see 'badgeshield presets')"),
-    badge_name: Optional[str] = typer.Option(None, "--badge-name", help="Output filename (default: <preset-name>.svg)"),
-    output_path: Optional[str] = typer.Option(None, "--output-path", help="Output directory (default: current directory)"),
-    search_path: str = typer.Option(".", "--search-path", help="Repo root used to resolve data-wired preset values"),
+    name: Optional[str] = typer.Argument(
+        None, help="Preset name (see 'badgeshield presets')"
+    ),
+    badge_name: Optional[str] = typer.Option(
+        None, "--badge-name", help="Output filename (default: <preset-name>.svg)"
+    ),
+    output_path: Optional[str] = typer.Option(
+        None, "--output-path", help="Output directory (default: current directory)"
+    ),
+    search_path: str = typer.Option(
+        ".", "--search-path", help="Repo root used to resolve data-wired preset values"
+    ),
     style: str = typer.Option("flat", help="FLAT | ROUNDED | GRADIENT | SHADOWED"),
-    format: Optional[str] = typer.Option(None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"),
-    extensions: Optional[List[str]] = typer.Option(None, help="File extensions for 'lines' preset, repeatable (default: .py)"),
-    junit: Optional[Path] = typer.Option(None, "--junit", help="JUnit XML path required by the 'tests' preset"),
-    coverage_xml: Optional[Path] = typer.Option(None, "--coverage-xml", help="coverage.xml path required by the 'coverage' preset"),
-    all_presets: bool = typer.Option(False, "--all", help="Generate all resolvable presets; skips data-wired presets that return 'unknown'"),
+    format: Optional[str] = typer.Option(
+        None, "--format", help="Print an embed snippet to stdout: markdown | rst | html"
+    ),
+    extensions: Optional[List[str]] = typer.Option(
+        None, help="File extensions for 'lines' preset, repeatable (default: .py)"
+    ),
+    junit: Optional[Path] = typer.Option(
+        None, "--junit", help="JUnit XML path required by the 'tests' preset"
+    ),
+    coverage_xml: Optional[Path] = typer.Option(
+        None,
+        "--coverage-xml",
+        help="coverage.xml path required by the 'coverage' preset",
+    ),
+    all_presets: bool = typer.Option(
+        False,
+        "--all",
+        help="Generate all resolvable presets; skips data-wired presets that return 'unknown'",
+    ),
 ) -> None:
     """Generate a badge from a named preset (see 'badgeshield presets' for the full list).
 
@@ -543,15 +623,21 @@ def preset_cmd(
     preset in one command.
     """
     if all_presets:
-        _run_all_presets(output_path, search_path, style, format, extensions, junit, coverage_xml)
+        _run_all_presets(
+            output_path, search_path, style, format, extensions, junit, coverage_xml
+        )
         return
 
     if name is None:
-        _error("Provide a preset name or use --all. Run 'badgeshield presets' to list available presets.")
+        _error(
+            "Provide a preset name or use --all. Run 'badgeshield presets' to list available presets."
+        )
         raise typer.Exit(1)
 
     if name not in PRESETS:
-        _error(f"Unknown preset '{name}'. Run 'badgeshield presets' to see available options.")
+        _error(
+            f"Unknown preset '{name}'. Run 'badgeshield presets' to see available options."
+        )
         raise typer.Exit(1)
 
     p = PRESETS[name]
@@ -561,7 +647,9 @@ def preset_cmd(
     try:
         style_enum = BadgeStyle[style.upper()]
     except KeyError:
-        _error(f"Invalid style '{style}'. Choose from: {', '.join(s.name for s in BadgeStyle)}")
+        _error(
+            f"Invalid style '{style}'. Choose from: {', '.join(s.name for s in BadgeStyle)}"
+        )
         raise typer.Exit(1)
 
     # Resolve right_text
@@ -587,7 +675,9 @@ def preset_cmd(
             raise typer.Exit(1)
     elif name == "coverage":
         if coverage_xml is None:
-            _error("The 'coverage' preset requires --coverage-xml <path-to-coverage.xml>")
+            _error(
+                "The 'coverage' preset requires --coverage-xml <path-to-coverage.xml>"
+            )
             raise typer.Exit(1)
         try:
             right_text = get_coverage(coverage_xml)

@@ -56,50 +56,67 @@ def test_parse_zero_coverage(tmp_path):
 
 def test_color_thresholds():
     assert coverage_color(100.0) == "#44cc11"  # >= 90
-    assert coverage_color(90.0)  == "#44cc11"  # boundary
-    assert coverage_color(89.9)  == "#97ca00"  # >= 80
-    assert coverage_color(80.0)  == "#97ca00"  # boundary
-    assert coverage_color(79.9)  == "#a4a61d"  # >= 70
-    assert coverage_color(70.0)  == "#a4a61d"  # boundary
-    assert coverage_color(69.9)  == "#dfb317"  # >= 60
-    assert coverage_color(60.0)  == "#dfb317"  # boundary
-    assert coverage_color(59.9)  == "#e05d44"  # < 60
-    assert coverage_color(0.0)   == "#e05d44"  # zero
+    assert coverage_color(90.0) == "#44cc11"  # boundary
+    assert coverage_color(89.9) == "#97ca00"  # >= 80
+    assert coverage_color(80.0) == "#97ca00"  # boundary
+    assert coverage_color(79.9) == "#a4a61d"  # >= 70
+    assert coverage_color(70.0) == "#a4a61d"  # boundary
+    assert coverage_color(69.9) == "#dfb317"  # >= 60
+    assert coverage_color(60.0) == "#dfb317"  # boundary
+    assert coverage_color(59.9) == "#e05d44"  # < 60
+    assert coverage_color(0.0) == "#e05d44"  # zero
 
 
 def test_coverage_cli_happy_path(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text('<coverage line-rate="0.943" branch-rate="0.812"/>')
-    result = runner.invoke(app, [
-        "coverage", str(xml), "--badge-name", "cov.svg", "--output-path", str(tmp_path)
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "coverage",
+            str(xml),
+            "--badge-name",
+            "cov.svg",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "cov.svg").exists()
 
 
 def test_coverage_cli_missing_file(tmp_path):
-    result = runner.invoke(app, [
-        "coverage", str(tmp_path / "missing.xml"), "--badge-name", "cov.svg"
-    ])
+    result = runner.invoke(
+        app, ["coverage", str(tmp_path / "missing.xml"), "--badge-name", "cov.svg"]
+    )
     assert result.exit_code == 1
 
 
 def test_coverage_cli_invalid_metric(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text('<coverage line-rate="0.943"/>')
-    result = runner.invoke(app, [
-        "coverage", str(xml), "--badge-name", "cov.svg", "--metric", "foo"
-    ])
+    result = runner.invoke(
+        app, ["coverage", str(xml), "--badge-name", "cov.svg", "--metric", "foo"]
+    )
     assert result.exit_code == 1
 
 
 def test_coverage_cli_branch_metric(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text('<coverage line-rate="0.943" branch-rate="0.812"/>')
-    result = runner.invoke(app, [
-        "coverage", str(xml), "--badge-name", "cov.svg",
-        "--output-path", str(tmp_path), "--metric", "branch"
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "coverage",
+            str(xml),
+            "--badge-name",
+            "cov.svg",
+            "--output-path",
+            str(tmp_path),
+            "--metric",
+            "branch",
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "cov.svg").exists()
 
@@ -107,17 +124,24 @@ def test_coverage_cli_branch_metric(tmp_path):
 def test_coverage_cli_custom_label(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text('<coverage line-rate="0.943"/>')
-    result = runner.invoke(app, [
-        "coverage", str(xml), "--badge-name", "cov.svg",
-        "--output-path", str(tmp_path), "--left-text", "tested"
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "coverage",
+            str(xml),
+            "--badge-name",
+            "cov.svg",
+            "--output-path",
+            str(tmp_path),
+            "--left-text",
+            "tested",
+        ],
+    )
     assert result.exit_code == 0
 
 
 def test_coverage_cli_malformed_xml(tmp_path):
     xml = tmp_path / "coverage.xml"
     xml.write_text("not xml at all <<<")
-    result = runner.invoke(app, [
-        "coverage", str(xml), "--badge-name", "cov.svg"
-    ])
+    result = runner.invoke(app, ["coverage", str(xml), "--badge-name", "cov.svg"])
     assert result.exit_code == 1

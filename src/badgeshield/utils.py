@@ -89,11 +89,11 @@ class FrameType(Enum):
 
 
 class BadgeTemplate(Enum):
-    DEFAULT      = "templates/label.svg"
+    DEFAULT = "templates/label.svg"
     CIRCLE_FRAME = "templates/circle_frame.svg"
-    CIRCLE       = "templates/circle.svg"
-    PILL         = "templates/pill.svg"
-    BANNER       = "templates/banner.svg"
+    CIRCLE = "templates/circle.svg"
+    PILL = "templates/pill.svg"
+    BANNER = "templates/banner.svg"
 
     def __str__(self) -> str:
         return self.value
@@ -101,7 +101,8 @@ class BadgeTemplate(Enum):
 
 class BadgeStyle(str, Enum):
     """Visual style preset for badge rendering."""
-    FLAT     = "flat"      # default — no visual change
-    ROUNDED  = "rounded"   # 8px border-radius on rectangular corners
+
+    FLAT = "flat"  # default — no visual change
+    ROUNDED = "rounded"  # 8px border-radius on rectangular corners
     GRADIENT = "gradient"  # gradient: left section lighter → base color
     SHADOWED = "shadowed"  # SVG feDropShadow filter

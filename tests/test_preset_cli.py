@@ -1,8 +1,8 @@
 """CLI tests for --format flag, preset, and presets subcommands."""
+
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
@@ -16,23 +16,31 @@ runner = CliRunner()
 # _format_snippet helper
 # ---------------------------------------------------------------------------
 
+
 def test_format_snippet_markdown():
     from badgeshield.generate_badge_cli import _format_snippet
+
     assert _format_snippet("badge.svg", "build", "markdown") == "![build](badge.svg)"
 
 
 def test_format_snippet_html():
     from badgeshield.generate_badge_cli import _format_snippet
-    assert _format_snippet("badge.svg", "build", "html") == '<img src="badge.svg" alt="build" />'
+
+    assert (
+        _format_snippet("badge.svg", "build", "html")
+        == '<img src="badge.svg" alt="build" />'
+    )
 
 
 def test_format_snippet_rst():
     from badgeshield.generate_badge_cli import _format_snippet
+
     assert "image::" in _format_snippet("badge.svg", "build", "rst")
 
 
 def test_format_snippet_invalid_format():
     from badgeshield.generate_badge_cli import _format_snippet
+
     with pytest.raises(ValueError, match="Unknown format"):
         _format_snippet("badge.svg", "build", "pdf")
 
@@ -41,42 +49,67 @@ def test_format_snippet_invalid_format():
 # single --format
 # ---------------------------------------------------------------------------
 
+
 def test_single_with_format_markdown(tmp_path):
-    result = runner.invoke(app, [
-        "single",
-        "--left-text", "build",
-        "--left-color", "GREEN",
-        "--badge-name", "build.svg",
-        "--output-path", str(tmp_path),
-        "--format", "markdown",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "single",
+            "--left-text",
+            "build",
+            "--left-color",
+            "GREEN",
+            "--badge-name",
+            "build.svg",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "markdown",
+        ],
+    )
     assert result.exit_code == 0
     assert "![build](" in result.output
     assert (tmp_path / "build.svg").exists()
 
 
 def test_single_with_format_rst(tmp_path):
-    result = runner.invoke(app, [
-        "single",
-        "--left-text", "build",
-        "--left-color", "GREEN",
-        "--badge-name", "build.svg",
-        "--output-path", str(tmp_path),
-        "--format", "rst",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "single",
+            "--left-text",
+            "build",
+            "--left-color",
+            "GREEN",
+            "--badge-name",
+            "build.svg",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "rst",
+        ],
+    )
     assert result.exit_code == 0
     assert ".. image::" in result.output
 
 
 def test_single_with_format_html(tmp_path):
-    result = runner.invoke(app, [
-        "single",
-        "--left-text", "build",
-        "--left-color", "GREEN",
-        "--badge-name", "build.svg",
-        "--output-path", str(tmp_path),
-        "--format", "html",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "single",
+            "--left-text",
+            "build",
+            "--left-color",
+            "GREEN",
+            "--badge-name",
+            "build.svg",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "html",
+        ],
+    )
     assert result.exit_code == 0
     assert "<img src=" in result.output
 
@@ -84,6 +117,7 @@ def test_single_with_format_html(tmp_path):
 # ---------------------------------------------------------------------------
 # presets list subcommand
 # ---------------------------------------------------------------------------
+
 
 def test_presets_list_renders():
     result = runner.invoke(app, ["presets"])
@@ -96,31 +130,48 @@ def test_presets_list_renders():
 # preset single-badge subcommand
 # ---------------------------------------------------------------------------
 
+
 def test_preset_cosmetic_no_args(tmp_path):
-    result = runner.invoke(app, [
-        "preset", "passing",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "passing",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "passing.svg").exists()
 
 
 def test_preset_default_badge_name(tmp_path):
     """badge_name defaults to {preset-name}.svg."""
-    result = runner.invoke(app, [
-        "preset", "stable",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "stable",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "stable.svg").exists()
 
 
 def test_preset_override_badge_name(tmp_path):
-    result = runner.invoke(app, [
-        "preset", "passing",
-        "--badge-name", "ci.svg",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "passing",
+            "--badge-name",
+            "ci.svg",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "ci.svg").exists()
 
@@ -131,11 +182,17 @@ def test_preset_unknown_name_exits_1():
 
 
 def test_preset_with_format(tmp_path):
-    result = runner.invoke(app, [
-        "preset", "passing",
-        "--output-path", str(tmp_path),
-        "--format", "markdown",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "passing",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "markdown",
+        ],
+    )
     assert result.exit_code == 0
     assert "![" in result.output
 
@@ -145,11 +202,17 @@ def test_preset_data_wired_version(tmp_path):
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nversion = "9.9.9"\n', encoding="utf-8"
     )
-    result = runner.invoke(app, [
-        "preset", "version",
-        "--search-path", str(tmp_path),
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "version",
+            "--search-path",
+            str(tmp_path),
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     svg = (tmp_path / "version.svg").read_text(encoding="utf-8")
     assert "9.9.9" in svg
@@ -157,10 +220,15 @@ def test_preset_data_wired_version(tmp_path):
 
 def test_preset_tests_requires_junit(tmp_path):
     """tests preset without --junit exits with code 1."""
-    result = runner.invoke(app, [
-        "preset", "tests",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "tests",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 1
 
 
@@ -170,11 +238,17 @@ def test_preset_tests_with_junit(tmp_path):
         '<?xml version="1.0"?><testsuite tests="5" failures="0"></testsuite>',
         encoding="utf-8",
     )
-    result = runner.invoke(app, [
-        "preset", "tests",
-        "--junit", str(junit),
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "tests",
+            "--junit",
+            str(junit),
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "tests.svg").exists()
 
@@ -183,11 +257,17 @@ def test_preset_tests_with_junit(tmp_path):
 # preset --all
 # ---------------------------------------------------------------------------
 
+
 def test_preset_all_generates_cosmetic_badges(tmp_path):
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "passing.svg").exists()
     assert (tmp_path / "black.svg").exists()
@@ -197,11 +277,17 @@ def test_preset_all_with_version_source(tmp_path):
     (tmp_path / "pyproject.toml").write_text(
         '[project]\nversion = "1.0.0"\n', encoding="utf-8"
     )
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--search-path", str(tmp_path),
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--search-path",
+            str(tmp_path),
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "version.svg").exists()
 
@@ -209,12 +295,18 @@ def test_preset_all_with_version_source(tmp_path):
 def test_preset_all_skips_unresolved(tmp_path, monkeypatch):
     """Data-wired presets returning 'unknown'/'untagged' are skipped."""
     from badgeshield.presets import PRESETS
+
     monkeypatch.setattr(PRESETS["version"], "source", lambda p: "unknown")
     monkeypatch.setattr(PRESETS["branch"], "source", lambda p: "unknown")
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert not (tmp_path / "version.svg").exists()
     assert not (tmp_path / "branch.svg").exists()
@@ -224,20 +316,32 @@ def test_preset_all_skips_unresolved(tmp_path, monkeypatch):
 def test_preset_all_zero_badges_exits_1(tmp_path, monkeypatch):
     """Empty preset registry → exit code 1."""
     import badgeshield.generate_badge_cli as cli_mod
+
     monkeypatch.setattr(cli_mod, "PRESETS", {})
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 1
 
 
 def test_preset_all_format_markdown(tmp_path):
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--output-path", str(tmp_path),
-        "--format", "markdown",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "markdown",
+        ],
+    )
     assert result.exit_code == 0
     assert "![" in result.output
 
@@ -249,11 +353,17 @@ def test_preset_all_with_junit(tmp_path):
         '<?xml version="1.0"?><testsuite tests="3" failures="0"></testsuite>',
         encoding="utf-8",
     )
-    result = runner.invoke(app, [
-        "preset", "--all",
-        "--junit", str(junit),
-        "--output-path", str(tmp_path),
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "preset",
+            "--all",
+            "--junit",
+            str(junit),
+            "--output-path",
+            str(tmp_path),
+        ],
+    )
     assert result.exit_code == 0
     assert (tmp_path / "tests.svg").exists()
 
@@ -262,15 +372,22 @@ def test_preset_all_with_junit(tmp_path):
 # batch --format and coverage --format integration tests
 # ---------------------------------------------------------------------------
 
+
 def test_batch_with_format_markdown(tmp_path):
     config = [{"left_text": "build", "left_color": "GREEN", "badge_name": "build.svg"}]
     config_file = tmp_path / "badges.json"
     config_file.write_text(json.dumps(config), encoding="utf-8")
-    result = runner.invoke(app, [
-        "batch", str(config_file),
-        "--output-path", str(tmp_path),
-        "--format", "markdown",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "batch",
+            str(config_file),
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "markdown",
+        ],
+    )
     assert result.exit_code == 0
     assert "![build](" in result.output
 
@@ -281,11 +398,18 @@ def test_coverage_with_format_html(tmp_path):
         '<?xml version="1.0"?><coverage line-rate="0.90" branch-rate="0.80" version="7.0"></coverage>',
         encoding="utf-8",
     )
-    result = runner.invoke(app, [
-        "coverage", str(coverage_xml),
-        "--badge-name", "cov.svg",
-        "--output-path", str(tmp_path),
-        "--format", "html",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "coverage",
+            str(coverage_xml),
+            "--badge-name",
+            "cov.svg",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "html",
+        ],
+    )
     assert result.exit_code == 0
-    assert '<img src=' in result.output
+    assert "<img src=" in result.output

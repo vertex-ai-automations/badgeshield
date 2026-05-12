@@ -26,6 +26,7 @@ jobs:
     uses: vertex-ai-automations/shared-workflows/.github/workflows/typecheck.yml@main
     with:
       install-command: 'pip install -e ".[dev]" mypy'
+      typecheck-command: 'mypy src/ --ignore-missing-imports'
 
   audit:
     name: Audit

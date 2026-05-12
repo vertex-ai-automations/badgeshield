@@ -22,17 +22,19 @@ from .utils import BadgeColor, BadgeStyle, BadgeTemplate, FrameType
 try:
     from PIL import Image, ImageColor, ImageFont
 except ImportError:
-    Image = ImageColor = ImageFont = None
+    Image = ImageColor = ImageFont = None  # type: ignore[assignment]
 
 
 def _lighten_hex(hex_color: str, factor: float = 0.2) -> str:
     """Return a lighter version of a hex color by increasing HSL lightness."""
     h = hex_color.lstrip("#")
-    r, g, b = int(h[0:2], 16)/255, int(h[2:4], 16)/255, int(h[4:6], 16)/255
+    r, g, b = int(h[0:2], 16) / 255, int(h[2:4], 16) / 255, int(h[4:6], 16) / 255
     hue, light, sat = colorsys.rgb_to_hls(r, g, b)  # colorsys uses HLS order
     light = min(1.0, light + factor * (1.0 - light))
     r2, g2, b2 = colorsys.hls_to_rgb(hue, light, sat)
-    return "#{:02X}{:02X}{:02X}".format(round(r2 * 255), round(g2 * 255), round(b2 * 255))
+    return "#{:02X}{:02X}{:02X}".format(
+        round(r2 * 255), round(g2 * 255), round(b2 * 255)
+    )
 
 
 class BadgeBatchGenerator:
@@ -124,9 +126,11 @@ class BadgeBatchGenerator:
 
         All arguments are forwarded directly to :meth:`BadgeGenerator.generate_badge`.
         Any exception raised during badge creation is propagated to the caller so that
-        batch execution can report the failure.
+        batch execution can report the failure.  # type: ignore[arg-type]
         """
-        generator = BadgeGenerator(template=template, log_level=self.log_level, style=style)
+        generator = BadgeGenerator(
+            template=template, log_level=self.log_level, style=style
+        )
         generator.generate_badge(
             left_text=left_text,
             left_color=left_color,
@@ -207,7 +211,9 @@ class BadgeGenerator:
     """Generate customizable SVG badges."""
 
     _template_cache: ClassVar[Dict[str, Template]] = {}
-    _RENDERERS: ClassVar[Dict[BadgeTemplate, Callable[..., str]]] = {}  # populated after class body
+    _RENDERERS: ClassVar[
+        Dict[BadgeTemplate, Callable[..., str]]
+    ] = {}  # populated after class body
     _cache_lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
@@ -296,8 +302,10 @@ class BadgeGenerator:
             try:
                 import sys
                 from pathlib import Path as _Path
-                if sys.version_info >= (3, 9):
-                    from importlib.resources import files
+
+                if sys.version_info >= (3, 9):  # type: ignore[assignment]
+                    from importlib.resources import files  # type: ignore[assignment]
+
                     font_path = str(files("badgeshield") / "fonts" / "DejaVuSans.ttf")
                 else:
                     font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
@@ -370,7 +378,7 @@ class BadgeGenerator:
         ValueError:
             If any argument is missing or malformed (e.g., empty text, invalid output directory, missing logo file, incorrect badge name suffix).
         TypeError:
-            When a value has the wrong type for its expected enum/string input.
+            When a value has the wrong type for its expected enum/string input.  # type: ignore[arg-type]
         """
         if not left_text:
             raise ValueError("left_text cannot be empty.")
@@ -427,7 +435,10 @@ class BadgeGenerator:
         # Use both Posix and Windows pure-path checks so the guard works
         # regardless of which OS is running (e.g. "/tmp/x.svg" is absolute on
         # Linux but not on Windows; "C:/x.svg" is the reverse).
-        if PurePosixPath(badge_name).is_absolute() or PureWindowsPath(badge_name).is_absolute():
+        if (
+            PurePosixPath(badge_name).is_absolute()
+            or PureWindowsPath(badge_name).is_absolute()
+        ):
             raise ValueError(
                 f"badge_name '{badge_name}' must be a plain filename, not an absolute path."
             )
@@ -490,7 +501,7 @@ class BadgeGenerator:
 
         font = self._get_font()
         if font:
-            try:
+            try:  # type: ignore[index]
                 bbox = font.getbbox(text)
             except AttributeError:
                 try:
@@ -523,7 +534,7 @@ class BadgeGenerator:
         estimated_width = self._fallback_text_width(text)
         self.logger.debug(
             "Calculated text width with fallback estimation",
-            extra={"text": text, "width": estimated_width},
+            extra={"text": text, "width": estimated_width},  # type: ignore[attr-defined]
         )
         return estimated_width
 
@@ -626,23 +637,42 @@ class BadgeGenerator:
             )
             return self.get_base64_content(logo)
 
-    def _style_context(self, style: "BadgeStyle", left_color_hex: str, id_suffix: str) -> dict:
+    def _style_context(
+        self, style: "BadgeStyle", left_color_hex: str, id_suffix: str
+    ) -> dict:
         """Compute Jinja2 context variables for the active style."""
         if style == BadgeStyle.ROUNDED:
-            return dict(rx="8", gradient_id=None, gradient_stop=None,
-                        gradient_base=None, shadow_id=None)
+            return dict(
+                rx="8",
+                gradient_id=None,
+                gradient_stop=None,
+                gradient_base=None,
+                shadow_id=None,
+            )
         if style == BadgeStyle.GRADIENT:
-            return dict(rx="3",
-                        gradient_id=f"grad{id_suffix}",
-                        gradient_stop=_lighten_hex(left_color_hex),
-                        gradient_base=left_color_hex,
-                        shadow_id=None)
+            return dict(
+                rx="3",
+                gradient_id=f"grad{id_suffix}",
+                gradient_stop=_lighten_hex(left_color_hex),
+                gradient_base=left_color_hex,
+                shadow_id=None,
+            )
         if style == BadgeStyle.SHADOWED:
-            return dict(rx="3", gradient_id=None, gradient_stop=None,
-                        gradient_base=None, shadow_id=f"shadow{id_suffix}")
+            return dict(
+                rx="3",
+                gradient_id=None,
+                gradient_stop=None,
+                gradient_base=None,
+                shadow_id=f"shadow{id_suffix}",
+            )
         # FLAT (default)
-        return dict(rx="3", gradient_id=None, gradient_stop=None,
-                    gradient_base=None, shadow_id=None)
+        return dict(
+            rx="3",
+            gradient_id=None,
+            gradient_stop=None,
+            gradient_base=None,
+            shadow_id=None,
+        )
 
     def _render_default(
         self,
@@ -751,7 +781,9 @@ class BadgeGenerator:
         logo_data = self._load_logo_image(logo, logo_tint) if logo else None
         circle_radius = 35
         logo_width, logo_height = self._calculate_logo_size(circle_radius)
-        font_size = self._calculate_font_size(left_text, circle_diameter=circle_radius * 2)
+        font_size = self._calculate_font_size(
+            left_text, circle_diameter=circle_radius * 2
+        )
         frame_data = self.get_base64_content(frame) if frame else None
         context = dict(
             left_text=left_text,
@@ -791,7 +823,9 @@ class BadgeGenerator:
 
         padding = 10
         left_w = self._calculate_text_width(left_text) + padding * 2
-        right_w = (self._calculate_text_width(right_text) + padding * 2) if right_text else 0
+        right_w = (
+            (self._calculate_text_width(right_text) + padding * 2) if right_text else 0
+        )
         total_w = left_w + right_w
 
         context = {
@@ -832,7 +866,9 @@ class BadgeGenerator:
 
         icon_zone_width = 28
         padding = 10
-        right_w = (self._calculate_text_width(right_text) + padding * 2) if right_text else 60
+        right_w = (
+            (self._calculate_text_width(right_text) + padding * 2) if right_text else 60
+        )
         total_w = icon_zone_width + right_w
 
         context = {
@@ -901,11 +937,23 @@ class BadgeGenerator:
         """
         renderer = BadgeGenerator._RENDERERS.get(self.template_enum)
         if renderer is None:
-            raise ValueError(f"No renderer registered for template {self.template_enum}")
+            raise ValueError(
+                f"No renderer registered for template {self.template_enum}"
+            )
         return renderer(
             self,
-            left_text, left_color, right_text, right_color, logo, frame,
-            left_link, right_link, id_suffix, left_title, right_title, logo_tint,
+            left_text,
+            left_color,
+            right_text,
+            right_color,
+            logo,
+            frame,
+            left_link,
+            right_link,
+            id_suffix,
+            left_title,
+            right_title,
+            logo_tint,
             style,
         )
 

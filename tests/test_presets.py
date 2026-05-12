@@ -1,7 +1,7 @@
 """Tests for presets.py."""
+
 from __future__ import annotations
 
-import pytest
 
 from badgeshield.presets import PRESETS, Preset
 
@@ -20,12 +20,32 @@ def test_all_presets_have_label():
 
 def test_cosmetic_presets_have_right_text():
     cosmetic_names = [
-        "black", "ruff", "flake8", "isort", "mypy",
-        "passing", "failing", "stable", "wip", "alpha", "beta", "rc",
-        "experimental", "maintained", "deprecated", "archived",
-        "library", "cli", "framework", "api",
-        "contributions-welcome", "hacktoberfest",
-        "cross-platform", "linux", "windows", "macos",
+        "black",
+        "ruff",
+        "flake8",
+        "isort",
+        "mypy",
+        "passing",
+        "failing",
+        "stable",
+        "wip",
+        "alpha",
+        "beta",
+        "rc",
+        "experimental",
+        "maintained",
+        "deprecated",
+        "archived",
+        "library",
+        "cli",
+        "framework",
+        "api",
+        "contributions-welcome",
+        "hacktoberfest",
+        "cross-platform",
+        "linux",
+        "windows",
+        "macos",
     ]
     for name in cosmetic_names:
         assert name in PRESETS, f"Missing preset: {name}"
@@ -37,8 +57,14 @@ def test_data_wired_presets_have_source():
     Note: tests and coverage have source=None because they need CLI-provided file paths.
     """
     search_path_wired = [
-        "version", "license", "python", "branch", "tag",
-        "commits", "repo-status", "lines",
+        "version",
+        "license",
+        "python",
+        "branch",
+        "tag",
+        "commits",
+        "repo-status",
+        "lines",
     ]
     for name in search_path_wired:
         assert name in PRESETS, f"Missing preset: {name}"
@@ -55,11 +81,10 @@ def test_preset_registry_size():
 
 def test_public_api_exports():
     from badgeshield import (
-        get_version, get_license, get_python_requires,
-        get_git_branch, get_git_tag, get_git_commit_count, get_git_status,
-        get_lines_of_code, get_test_results, get_coverage,
-        PRESETS, Preset,
+        get_version,
+        PRESETS,
     )
+
     assert callable(get_version)
     assert isinstance(PRESETS, dict)
 
@@ -71,7 +96,16 @@ def test_preset_source_callable_protocol(tmp_path):
     Results will be 'unknown'/'untagged' — we are testing the callable interface,
     not the extraction logic (which is covered by test_sources.py).
     """
-    search_only = ["version", "license", "python", "branch", "tag", "commits", "repo-status", "lines"]
+    search_only = [
+        "version",
+        "license",
+        "python",
+        "branch",
+        "tag",
+        "commits",
+        "repo-status",
+        "lines",
+    ]
     for name in search_only:
         preset = PRESETS[name]
         result = preset.source(tmp_path)
