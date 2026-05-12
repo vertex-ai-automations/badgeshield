@@ -217,6 +217,8 @@ class BadgeGenerator:
         Dict[BadgeTemplate, Callable[..., str]]
     ] = {}  # populated after class body
     _cache_lock: ClassVar[threading.Lock] = threading.Lock()
+    _badge_font: ClassVar[Optional["ImageFont.ImageFont"]] = None
+    _font_loaded: ClassVar[bool] = False
 
     def __init__(
         self,
@@ -295,26 +297,28 @@ class BadgeGenerator:
         """Validate if a string is a valid hex color."""
         return bool(re.match(r"^#([A-Fa-f0-9]{6})$", color))
 
-    def _get_font(self) -> Optional["ImageFont.ImageFont"]:
-        """Return a lazily instantiated font object, preferring the bundled DejaVuSans."""
+    @classmethod
+    def _get_font(cls) -> Optional["ImageFont.ImageFont"]:
+        """Return the bundled DejaVuSans font, loading it once at class level."""
         if ImageFont is None:
             return None
+        with cls._cache_lock:
+            if not cls._font_loaded:
+                try:
+                    import sys
+                    from pathlib import Path as _Path
 
-        if not hasattr(self, "_badge_font"):
-            try:
-                import sys
-                from pathlib import Path as _Path
+                    if sys.version_info >= (3, 9):  # type: ignore[assignment]
+                        from importlib.resources import files  # type: ignore[assignment]
 
-                if sys.version_info >= (3, 9):  # type: ignore[assignment]
-                    from importlib.resources import files  # type: ignore[assignment]
-
-                    font_path = str(files("badgeshield") / "fonts" / "DejaVuSans.ttf")
-                else:
-                    font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
-                self._badge_font = ImageFont.truetype(font_path, 110)
-            except OSError:
-                self._badge_font = ImageFont.load_default()  # type: ignore[assignment]
-        return self._badge_font  # type: ignore[return-value]
+                        font_path = str(files("badgeshield") / "fonts" / "DejaVuSans.ttf")
+                    else:
+                        font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
+                    cls._badge_font = ImageFont.truetype(font_path, 110)
+                except OSError:
+                    cls._badge_font = ImageFont.load_default()  # type: ignore[assignment]
+                cls._font_loaded = True
+        return cls._badge_font  # type: ignore[return-value]
 
     @staticmethod
     def validate_color(color: Union[BadgeColor, str], color_name: str) -> str:

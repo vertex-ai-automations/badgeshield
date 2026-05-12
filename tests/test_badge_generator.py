@@ -511,10 +511,11 @@ def test_get_font_uses_bundled_font(monkeypatch):
 
     monkeypatch.setattr(ImageFont, "truetype", patched_truetype)
 
+    # Reset class-level cache so _get_font performs a fresh load under the patched truetype
+    monkeypatch.setattr(BadgeGenerator, "_badge_font", None)
+    monkeypatch.setattr(BadgeGenerator, "_font_loaded", False)
+
     gen = BadgeGenerator()
-    # Clear cached font to force a fresh load
-    if hasattr(gen, "_badge_font"):
-        del gen._badge_font
 
     font = gen._get_font()
     assert font is not None, "_get_font() returned None — Pillow may not be installed"
@@ -752,3 +753,17 @@ def test_generate_badge_returns_output_path(output_dir):
     assert isinstance(result, str)
     assert result == str(output_dir / "ret.svg")
     assert Path(result).exists()
+
+
+def test_font_cache_is_shared_across_instances():
+    """_get_font must return the same font object from two different BadgeGenerator instances."""
+    from badgeshield.badge_generator import BadgeGenerator, ImageFont
+
+    if ImageFont is None:
+        pytest.skip("Pillow not installed")
+
+    gen1 = BadgeGenerator()
+    gen2 = BadgeGenerator()
+    font1 = gen1._get_font()
+    font2 = gen2._get_font()
+    assert font1 is font2, "Font was loaded twice — class-level cache is not working"
