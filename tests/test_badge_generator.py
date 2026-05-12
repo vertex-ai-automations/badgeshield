@@ -738,3 +738,17 @@ def test_banner_right_color_falls_back_to_left_color(tmp_path):
         output_path=str(tmp_path),
     )
     assert gen._last_render_context["right_color"] == "#1a1a2e"
+
+
+def test_generate_badge_returns_output_path(output_dir):
+    """generate_badge must return the full path of the written SVG file."""
+    gen = BadgeGenerator()
+    result = gen.generate_badge(
+        left_text="build",
+        left_color="#44cc11",
+        badge_name="ret.svg",
+        output_path=str(output_dir),
+    )
+    assert isinstance(result, str)
+    assert result == str(output_dir / "ret.svg")
+    assert Path(result).exists()

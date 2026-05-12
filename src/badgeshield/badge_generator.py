@@ -975,7 +975,7 @@ class BadgeGenerator:
         left_title: Optional[str] = None,
         right_title: Optional[str] = None,
         logo_tint: Optional[Union[str, BadgeColor]] = None,
-    ) -> None:
+    ) -> str:
         """Generates a badge based on the provided parameters and saves it as an SVG file.
 
         Parameters
@@ -1048,6 +1048,7 @@ class BadgeGenerator:
             with open(full_path, "w", encoding="utf-8") as file:
                 file.write(badge_content)
             self.logger.info(f"Badge generated and saved to {full_path}")
+            return full_path
         except Exception as e:
             self.logger.error(f"An error occurred while generating the badge: {e}")
             raise
