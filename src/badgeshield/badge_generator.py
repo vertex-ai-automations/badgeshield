@@ -129,7 +129,7 @@ class BadgeBatchGenerator:
         batch execution can report the failure.  # type: ignore[arg-type]
         """
         generator = BadgeGenerator(
-            template=template,
+            template=template,  # type: ignore[arg-type]
             log_level=self.log_level,
             style=style,  # type: ignore[arg-type]
         )
