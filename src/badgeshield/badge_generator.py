@@ -129,7 +129,9 @@ class BadgeBatchGenerator:
         batch execution can report the failure.  # type: ignore[arg-type]
         """
         generator = BadgeGenerator(
-            template=template, log_level=self.log_level, style=style
+            template=template,
+            log_level=self.log_level,
+            style=style,  # type: ignore[arg-type]
         )
         generator.generate_badge(
             left_text=left_text,
@@ -311,8 +313,8 @@ class BadgeGenerator:
                     font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
                 self._badge_font = ImageFont.truetype(font_path, 110)
             except OSError:
-                self._badge_font = ImageFont.load_default()
-        return self._badge_font
+                self._badge_font = ImageFont.load_default()  # type: ignore[assignment]
+        return self._badge_font  # type: ignore[return-value]
 
     @staticmethod
     def validate_color(color: Union[BadgeColor, str], color_name: str) -> str:
@@ -386,7 +388,7 @@ class BadgeGenerator:
         # Validate the frame parameter if the CIRCLE_FRAME template is used
         frame_value: Optional[str]
         if self.template_name == BadgeTemplate.CIRCLE_FRAME.value:
-            frame_value = self.validate_frame(frame)
+            frame_value = self.validate_frame(frame)  # type: ignore[arg-type]
         elif isinstance(frame, FrameType):
             frame_value = frame.value
         else:
@@ -512,7 +514,7 @@ class BadgeGenerator:
                 else:
                     bbox = None
             else:
-                width = bbox[2] - bbox[0]
+                width = bbox[2] - bbox[0]  # type: ignore[index]
 
             font_size = getattr(font, "size", None)
             if not font_size:
@@ -545,7 +547,7 @@ class BadgeGenerator:
         """Approximate the font size for bitmap fonts lacking explicit size metadata."""
 
         try:
-            ascent, descent = font.getmetrics()
+            ascent, descent = font.getmetrics()  # type: ignore[attr-defined]
         except (AttributeError, TypeError):
             ascent = descent = 0
 

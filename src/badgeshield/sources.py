@@ -246,7 +246,7 @@ def get_lines_of_code(
 
     # Use Path.walk() on Python 3.12+, fall back to os.walk otherwise
     try:
-        walker = search_path.walk()
+        walker = search_path.walk()  # type: ignore[attr-defined]
     except AttributeError:
         walker = _os_walk(search_path)
 
