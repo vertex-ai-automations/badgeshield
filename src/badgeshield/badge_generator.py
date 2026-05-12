@@ -108,7 +108,7 @@ class BadgeBatchGenerator:
         left_text: str,
         left_color: BadgeColor,
         badge_name: str,
-        template: Optional[BadgeTemplate] = BadgeTemplate.DEFAULT,
+        template: BadgeTemplate = BadgeTemplate.DEFAULT,
         output_path: Optional[str] = None,
         right_text: Optional[str] = None,
         right_color: Optional[BadgeColor] = None,
@@ -217,6 +217,7 @@ class BadgeGenerator:
         Dict[BadgeTemplate, Callable[..., str]]
     ] = {}  # populated after class body
     _cache_lock: ClassVar[threading.Lock] = threading.Lock()
+    _font_lock: ClassVar[threading.Lock] = threading.Lock()
     _badge_font: ClassVar[Optional["ImageFont.ImageFont"]] = None
     _font_loaded: ClassVar[bool] = False
 
@@ -302,7 +303,7 @@ class BadgeGenerator:
         """Return the bundled DejaVuSans font, loading it once at class level."""
         if ImageFont is None:
             return None
-        with cls._cache_lock:
+        with cls._font_lock:
             if not cls._font_loaded:
                 try:
                     import sys
@@ -340,7 +341,7 @@ class BadgeGenerator:
         )
 
     @staticmethod
-    def validate_frame(frame: Union[FrameType, str]) -> str:
+    def validate_frame(frame: Optional[Union[FrameType, str]]) -> str:
         """Validate the frame input."""
         if frame is None:
             raise ValueError(
