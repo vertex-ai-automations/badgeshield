@@ -353,3 +353,24 @@ class TestAuditCommand:
         )
         result = self.runner.invoke(app, ["audit", str(svg)])
         assert result.exit_code == 1
+
+
+def test_single_invalid_format_exits_1(tmp_path):
+    """An unrecognised --format value on 'single' must exit 1 with an Error panel."""
+    from typer.testing import CliRunner
+    from badgeshield.generate_badge_cli import app
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "single",
+            "--left-text", "build",
+            "--left-color", "GREEN",
+            "--badge-name", "b.svg",
+            "--output-path", str(tmp_path),
+            "--format", "pdf",
+        ],
+    )
+    assert result.exit_code == 1
+    assert "Error" in result.output

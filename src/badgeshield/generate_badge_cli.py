@@ -48,6 +48,20 @@ def _format_snippet(svg_path: str, alt_text: str, fmt: str) -> str:
         raise ValueError(f"Unknown format {fmt!r}. Expected: markdown, rst, html")
 
 
+def _validate_format(fmt: Optional[str]) -> Optional[str]:
+    """Normalise and validate a --format value. Returns lower-case string or None.
+
+    Prints an Error panel and raises typer.Exit(1) on unrecognised input.
+    """
+    if fmt is None:
+        return None
+    fmt_lower = fmt.lower()
+    if fmt_lower not in ("markdown", "rst", "html"):
+        _error(f"Invalid format '{fmt}'. Choose from: markdown, rst, html")
+        raise typer.Exit(1)
+    return fmt_lower
+
+
 @app.command()
 def single(
     left_text: str = typer.Option(..., "--left-text", help="Text for the left section"),
@@ -163,13 +177,10 @@ def single(
         _error(str(exc))
         raise typer.Exit(1)
 
-    if format:
-        fmt_lower = format.lower()
-        if fmt_lower not in ("markdown", "rst", "html"):
-            _error(f"Invalid format '{format}'. Choose from: markdown, rst, html")
-            raise typer.Exit(1)
+    fmt = _validate_format(format)
+    if fmt:
         svg_path = str(Path(output_path or ".") / badge_name)
-        typer.echo(_format_snippet(svg_path, left_text, fmt_lower))
+        typer.echo(_format_snippet(svg_path, left_text, fmt))
 
 
 @app.command()
@@ -315,17 +326,14 @@ def batch(
 
     rprint(table)
 
-    if format:
-        fmt_lower = format.lower()
-        if fmt_lower not in ("markdown", "rst", "html"):
-            _error(f"Invalid format '{format}'. Choose from: markdown, rst, html")
-            raise typer.Exit(1)
+    fmt = _validate_format(format)
+    if fmt:
         for badge in badge_configs:
             if badge["badge_name"] not in failure_map:
                 svg_path = str(Path(output_path or ".") / badge["badge_name"])
                 typer.echo(
                     _format_snippet(
-                        svg_path, badge.get("left_text", badge["badge_name"]), fmt_lower
+                        svg_path, badge.get("left_text", badge["badge_name"]), fmt
                     )
                 )
 
@@ -383,13 +391,10 @@ def coverage(
 
     typer.echo(f"Coverage badge generated: {pct:.1f}% ({metric} coverage)")
 
-    if format:
-        fmt_lower = format.lower()
-        if fmt_lower not in ("markdown", "rst", "html"):
-            _error(f"Invalid format '{format}'. Choose from: markdown, rst, html")
-            raise typer.Exit(1)
+    fmt = _validate_format(format)
+    if fmt:
         svg_path = str(Path(output_path or ".") / badge_name)
-        typer.echo(_format_snippet(svg_path, left_text, fmt_lower))
+        typer.echo(_format_snippet(svg_path, left_text, fmt))
 
 
 @app.command()
@@ -571,14 +576,11 @@ def _run_all_presets(
 
     rprint(f"[green]✓ Generated {len(written)} badge(s)[/green]")
 
-    if format:
-        fmt_lower = format.lower()
-        if fmt_lower not in ("markdown", "rst", "html"):
-            _error(f"Invalid format '{format}'.")
-            raise typer.Exit(1)
+    fmt = _validate_format(format)
+    if fmt:
         for _, out_name, alt_text in written:
             svg_path = str(Path(output_path or ".") / out_name)
-            typer.echo(_format_snippet(svg_path, alt_text, fmt_lower))
+            typer.echo(_format_snippet(svg_path, alt_text, fmt))
 
 
 @app.command(name="preset")
@@ -707,13 +709,10 @@ def preset_cmd(
         _error(str(exc))
         raise typer.Exit(1)
 
-    if format:
-        fmt_lower = format.lower()
-        if fmt_lower not in ("markdown", "rst", "html"):
-            _error(f"Invalid format '{format}'. Choose from: markdown, rst, html")
-            raise typer.Exit(1)
+    fmt = _validate_format(format)
+    if fmt:
         svg_path = str(Path(output_path or ".") / out_name)
-        typer.echo(_format_snippet(svg_path, p.label, fmt_lower))
+        typer.echo(_format_snippet(svg_path, p.label, fmt))
 
 
 def main() -> None:
