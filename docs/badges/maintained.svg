@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="20" aria-label="maintained - maintained">
+  <title>maintained - maintained</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="144" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="72" height="20"
+      fill="#00FF00"
+>
+    </rect>
+
+    <rect x="72" width="72" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="360.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="620" lengthAdjust="spacing">maintained</text>
+    <text x="360.0" y="140" transform="scale(0.1)" textLength="620" lengthAdjust="spacing">maintained</text>
+      <text x="1080.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="620" lengthAdjust="spacing">maintained</text>
+      <text x="1080.0" y="140" transform="scale(0.1)" textLength="620" lengthAdjust="spacing">maintained</text>
+  </g>
+
+</svg>

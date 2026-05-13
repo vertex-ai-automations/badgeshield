@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="78" height="20" aria-label="lines - 4,186">
+  <title>lines - 4,186</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="78" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="36" height="20"
+      fill="#4B0082"
+>
+    </rect>
+
+    <rect x="36" width="42" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="180.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="260" lengthAdjust="spacing">lines</text>
+    <text x="180.0" y="140" transform="scale(0.1)" textLength="260" lengthAdjust="spacing">lines</text>
+      <text x="570.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="320" lengthAdjust="spacing">4,186</text>
+      <text x="570.0" y="140" transform="scale(0.1)" textLength="320" lengthAdjust="spacing">4,186</text>
+  </g>
+
+</svg>

@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" aria-label="commits - 109">
+  <title>commits - 109</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="88" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="57" height="20"
+      fill="#696969"
+>
+    </rect>
+
+    <rect x="57" width="31" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="285.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="470" lengthAdjust="spacing">commits</text>
+    <text x="285.0" y="140" transform="scale(0.1)" textLength="470" lengthAdjust="spacing">commits</text>
+      <text x="725.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="210" lengthAdjust="spacing">109</text>
+      <text x="725.0" y="140" transform="scale(0.1)" textLength="210" lengthAdjust="spacing">109</text>
+  </g>
+
+</svg>

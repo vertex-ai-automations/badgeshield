@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="57" height="20" aria-label="type - cli">
+  <title>type - cli</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="57" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="35" height="20"
+      fill="#008B8B"
+>
+    </rect>
+
+    <rect x="35" width="22" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="175.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="250" lengthAdjust="spacing">type</text>
+    <text x="175.0" y="140" transform="scale(0.1)" textLength="250" lengthAdjust="spacing">type</text>
+      <text x="460.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="120" lengthAdjust="spacing">cli</text>
+      <text x="460.0" y="140" transform="scale(0.1)" textLength="120" lengthAdjust="spacing">cli</text>
+  </g>
+
+</svg>

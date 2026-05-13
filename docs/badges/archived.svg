@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="116" height="20" aria-label="archived - archived">
+  <title>archived - archived</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="116" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="58" height="20"
+      fill="#696969"
+>
+    </rect>
+
+    <rect x="58" width="58" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="290.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="480" lengthAdjust="spacing">archived</text>
+    <text x="290.0" y="140" transform="scale(0.1)" textLength="480" lengthAdjust="spacing">archived</text>
+      <text x="870.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="480" lengthAdjust="spacing">archived</text>
+      <text x="870.0" y="140" transform="scale(0.1)" textLength="480" lengthAdjust="spacing">archived</text>
+  </g>
+
+</svg>

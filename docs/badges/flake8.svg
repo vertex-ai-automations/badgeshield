@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="89" height="20" aria-label="linting - flake8">
+  <title>linting - flake8</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="89" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="45" height="20"
+      fill="#00008B"
+>
+    </rect>
+
+    <rect x="45" width="44" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="225.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="350" lengthAdjust="spacing">linting</text>
+    <text x="225.0" y="140" transform="scale(0.1)" textLength="350" lengthAdjust="spacing">linting</text>
+      <text x="670.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="340" lengthAdjust="spacing">flake8</text>
+      <text x="670.0" y="140" transform="scale(0.1)" textLength="340" lengthAdjust="spacing">flake8</text>
+  </g>
+
+</svg>

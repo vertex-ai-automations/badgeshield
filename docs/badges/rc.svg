@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="20" aria-label="status - rc">
+  <title>status - rc</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="64" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="44" height="20"
+      fill="#CCCC00"
+>
+    </rect>
+
+    <rect x="44" width="20" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="220.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="340" lengthAdjust="spacing">status</text>
+    <text x="220.0" y="140" transform="scale(0.1)" textLength="340" lengthAdjust="spacing">status</text>
+      <text x="540.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="100" lengthAdjust="spacing">rc</text>
+      <text x="540.0" y="140" transform="scale(0.1)" textLength="100" lengthAdjust="spacing">rc</text>
+  </g>
+
+</svg>

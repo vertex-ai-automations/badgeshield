@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="146" height="20" aria-label="deprecated - deprecated">
+  <title>deprecated - deprecated</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="146" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="73" height="20"
+      fill="#FF0000"
+>
+    </rect>
+
+    <rect x="73" width="73" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="365.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="630" lengthAdjust="spacing">deprecated</text>
+    <text x="365.0" y="140" transform="scale(0.1)" textLength="630" lengthAdjust="spacing">deprecated</text>
+      <text x="1095.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="630" lengthAdjust="spacing">deprecated</text>
+      <text x="1095.0" y="140" transform="scale(0.1)" textLength="630" lengthAdjust="spacing">deprecated</text>
+  </g>
+
+</svg>

@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="75" height="20" aria-label="linting - ruff">
+  <title>linting - ruff</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="75" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="45" height="20"
+      fill="#4B0082"
+>
+    </rect>
+
+    <rect x="45" width="30" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="225.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="350" lengthAdjust="spacing">linting</text>
+    <text x="225.0" y="140" transform="scale(0.1)" textLength="350" lengthAdjust="spacing">linting</text>
+      <text x="600.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="200" lengthAdjust="spacing">ruff</text>
+      <text x="600.0" y="140" transform="scale(0.1)" textLength="200" lengthAdjust="spacing">ruff</text>
+  </g>
+
+</svg>

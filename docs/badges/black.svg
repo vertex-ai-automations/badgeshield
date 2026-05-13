@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="105" height="20" aria-label="code style - black">
+  <title>code style - black</title>
+
+  <defs>
+    <clipPath id="round">
+      <rect width="105" height="20" rx="3" fill="#fff"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="66" height="20"
+      fill="#000000"
+>
+    </rect>
+
+    <rect x="66" width="39" height="20" fill="#555555">
+    </rect>
+  </g>
+
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+    <text x="330.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="560" lengthAdjust="spacing">code style</text>
+    <text x="330.0" y="140" transform="scale(0.1)" textLength="560" lengthAdjust="spacing">code style</text>
+      <text x="855.0" y="150" fill="#010101" fill-opacity=".3" transform="scale(0.1)" textLength="290" lengthAdjust="spacing">black</text>
+      <text x="855.0" y="140" transform="scale(0.1)" textLength="290" lengthAdjust="spacing">black</text>
+  </g>
+
+</svg>
