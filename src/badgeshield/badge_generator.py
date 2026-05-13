@@ -312,10 +312,14 @@ class BadgeGenerator:
                     if sys.version_info >= (3, 9):  # type: ignore[assignment]
                         from importlib.resources import files  # type: ignore[assignment]
 
-                        font_path = str(files("badgeshield") / "fonts" / "DejaVuSans.ttf")
+                        font_path = str(
+                            files("badgeshield") / "fonts" / "DejaVuSans.ttf"
+                        )
                     else:
-                        font_path = str(_Path(__file__).parent / "fonts" / "DejaVuSans.ttf")
-                    cls._badge_font = ImageFont.truetype(font_path, 110)
+                        font_path = str(
+                            _Path(__file__).parent / "fonts" / "DejaVuSans.ttf"
+                        )
+                    cls._badge_font = ImageFont.truetype(font_path, 110)  # type: ignore[assignment]
                 except OSError:
                     cls._badge_font = ImageFont.load_default()  # type: ignore[assignment]
                 cls._font_loaded = True

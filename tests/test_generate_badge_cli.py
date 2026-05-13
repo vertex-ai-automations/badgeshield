@@ -365,11 +365,16 @@ def test_single_invalid_format_exits_1(tmp_path):
         app,
         [
             "single",
-            "--left-text", "build",
-            "--left-color", "GREEN",
-            "--badge-name", "b.svg",
-            "--output-path", str(tmp_path),
-            "--format", "pdf",
+            "--left-text",
+            "build",
+            "--left-color",
+            "GREEN",
+            "--badge-name",
+            "b.svg",
+            "--output-path",
+            str(tmp_path),
+            "--format",
+            "pdf",
         ],
     )
     assert result.exit_code == 1
