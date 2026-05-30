@@ -6,13 +6,12 @@
 [project]
 site_name        = "BadgeShield"
 site_description = "A Python package for generating beautiful, customizable SVG badges — with a CLI, batch processing, and Pillow-powered font metrics."
-site_author      = "Vertex AI Automations"
-site_url         = "https://vertex-ai-automations.github.io/badgeshield"
+site_url         = "https://ihassan8.github.io/badgeshield"
 site_dir         = "public"
-repo_name        = "vertex-ai-automations/badgeshield"
-repo_url         = "https://github.com/vertex-ai-automations/badgeshield"
+repo_name        = "ihassan8/badgeshield"
+repo_url         = "https://github.com/ihassan8/badgeshield"
 edit_uri         = "edit/main/docs"
-copyright        = "Copyright &copy; 2024-2026 Vertex AI Automations"
+
 extra_css        = ["css/extra.css"]
 extra_javascript = ["js/extra.js"]
 
@@ -90,18 +89,13 @@ generator = false
 
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
-link = "https://github.com/vertex-ai-automations/badgeshield"
+link = "https://github.com/ihassan8/badgeshield"
 name = "BadgeShield on GitHub"
 
 [[project.extra.social]]
 icon = "fontawesome/brands/python"
 link = "https://pypi.org/project/badgeshield/"
 name = "BadgeShield on PyPI"
-
-[[project.extra.social]]
-icon = "material/web"
-link = "https://www.vertexaiautomations.com"
-name = "Vertex AI Automations"
 
 # ── Plugins ───────────────────────────────────────────────────────────────────
 # Note: git-authors and git-revision-date-localized are not yet supported in
@@ -174,7 +168,7 @@ auto_title          = true
 [project.markdown_extensions.pymdownx.magiclink]
 normalize_issue_symbols = true
 repo_url_shorthand      = true
-user                    = "vertex-ai-automations"
+user                    = "ihassan8"
 repo                    = "badgeshield"
 
 [project.markdown_extensions.pymdownx.mark]

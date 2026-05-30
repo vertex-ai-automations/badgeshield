@@ -5,9 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "badgeshield" 
 description = "Generate customizable SVG badges for any project — offline, no network calls"
-authors = [
-    {name = "Vertex AI Automations", email = "info@vertexaiautomations.com"}
-]
+
 readme = "README.md"
 
 classifiers = [
@@ -48,10 +46,10 @@ docs = [
 ]
 
 [project.urls]
-homepage = "https://www.vertexaiautomations.com"
-documentation = "https://vertex-ai-automations.github.io/badgeshield"
-repository = 'https://github.com/vertex-ai-automations/badgeshield'
-issues = "https://github.com/vertex-ai-automations/badgeshield/issues/new"
+homepage = "https://github.com/ihassan8"
+documentation = "https://ihassan8.github.io/badgeshield"
+repository = 'https://github.com/ihassan8/badgeshield'
+issues = "https://github.com/ihassan8/badgeshield/issues/new"
 
 [project.scripts]
 badgeshield = "badgeshield.generate_badge_cli:main"

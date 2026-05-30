@@ -61,7 +61,7 @@ jobs:
     if: |
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
       github.event_name == 'workflow_dispatch'
-    uses: vertex-ai-automations/shared-workflows/.github/workflows/publish-zensical.yml@main
+    uses: ihassan8/shared-workflows/.github/workflows/publish-zensical.yml@main
     permissions:
       contents: read
       pages: write
@@ -78,7 +78,7 @@ jobs:
   # ============================================================
   publish:
     name: 📦 Publish Package
-    uses: vertex-ai-automations/shared-workflows/.github/workflows/python-publish.yml@main
+    uses: ihassan8/shared-workflows/.github/workflows/python-publish.yml@main
     permissions:
       contents: read
       id-token: write

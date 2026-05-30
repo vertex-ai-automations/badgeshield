@@ -227,4 +227,4 @@ Exit code `0` means clean; `1` means external URLs were found; `2` means the fil
 
 ## Contributing
 
-Found a bug or want a new template? Open an issue or pull request on [GitHub](https://github.com/vertex-ai-automations/badgeshield/issues/new).
+Found a bug or want a new template? Open an issue or pull request on [GitHub](https://github.com/ihassan8/badgeshield/issues/new).

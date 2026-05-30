@@ -3,9 +3,9 @@
 ## BadgeShield
 
 - [PyPI package](https://pypi.org/project/badgeshield/)
-- [GitHub repository](https://github.com/vertex-ai-automations/badgeshield)
-- [Issue tracker](https://github.com/vertex-ai-automations/badgeshield/issues)
-- [Changelog](https://github.com/vertex-ai-automations/badgeshield/releases)
+- [GitHub repository](https://github.com/ihassan8/badgeshield)
+- [Issue tracker](https://github.com/ihassan8/badgeshield/issues)
+- [Changelog](https://github.com/ihassan8/badgeshield/releases)
 
 ## Dependencies
 
